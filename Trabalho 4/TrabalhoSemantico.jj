@@ -17,9 +17,7 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-
             imprimeTabela();
-            System.out.println("SUCESSO");
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -176,7 +174,6 @@ void Ident() :
         tmp.setIdentificador(t.toString());
         tmp.setNivel(nivelCorrente);
 
-        System.out.println(flagCategoria);
         if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
@@ -223,21 +220,44 @@ void Multidivexpr() : {} { Unaryexpr() (Multidiv() Unaryexpr())* }
 void Multidiv() : {} { "*" | "/" }
 void Unaryexpr(): {} { Lastexpr() (LOOKAHEAD(2) Unaryop() Lastexpr())? }
 void Unaryop() : {} { <NOT> | "-" | "+" }
-void Lastexpr() : {} { Atomexpr() | Stringlit() | <BIN> | "("Expression()")" | <IDENTIFIER> (Variable() | Callf())? }
+void Lastexpr() :
+{
+    Token t;
+}
+{
+    Atomexpr()
+    |
+    Stringlit()
+    |
+    <BIN>
+    |
+    "("Expression()")"
+    |
+    t = <IDENTIFIER> (Variable() | Callf())?
+    {
+        if(naoDeclarado(t.toString(), nivelCorrente))
+            System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+    }
+}
 void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
-void Varexp() : {} { <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )? }
+void Varexp() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
+    {
+        if(naoDeclarado(t.toString(), nivelCorrente))
+            System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+    }
+}
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
 void Seqexpr() : {} { "{" ( <DOLAR> | Objexpr() (LOOKAHEAD(2) "," Objexpr())* ("," <DOLAR>)? )? "}" }
 void Call() : {} { <IDENTIFIER> "(" (Arglist())? ")"}
 void Callf() : {} { "(" (Arglist())? ")"}
 void Arglist() : {} { Expression() ("," Expression())* }
 void Objexpr() : {} { Atomexpr() | Seqexpr() | <STRING> }
-void Atomexpr() :
-{
-}
-{
-    valor = <ATOMINTEGER> | <ATOMREAL> | <ATOMBINARY> | <ATOMOCTAL> | <ATOMDECIMAL> | <ATOMHEXADECIMAL>
-}
+void Atomexpr() : {}{ <ATOMINTEGER> | <ATOMREAL> | <ATOMBINARY> | <ATOMOCTAL> | <ATOMDECIMAL> | <ATOMHEXADECIMAL> }
 
 
 /* Funcoes Auxiliares */
@@ -254,7 +274,6 @@ boolean naoDeclarado(String IdProcurado, Integer NivelProcurado) :
             dado = TabelaSimb.get(chave);
 
             if(dado.getIdentificador().equals(IdProcurado) && dado.getNivel() == NivelProcurado){
-                System.out.println("Identificador já declarado no nível atual");
                 return false;/* ja existe na tabela*/
             }
         }
@@ -272,6 +291,9 @@ void insereTabela(Dado dado) :
             TabelaSimb.put(indexTabela, dado);
             listaChaves.add(indexTabela);
             indexTabela++;
+        }
+        else {
+            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" já declarado no nível atual");
         }
     }
 }

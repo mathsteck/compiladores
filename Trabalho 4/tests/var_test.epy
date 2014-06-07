@@ -1,2 +1,4 @@
-integer a
-atom b = 4, c = 2
+integer a = 5, c
+atom b = 4
+
+a = b + c
