@@ -1235,12 +1235,12 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(PROCEDURE);
-        listaChaves.clear();
-        nivelCorrente--;
-
         if(procedureReturn > 0)
             System.out.println("Erro! Procedure n\u00e3o pode ter return!!");
         procedureReturn = 0;
+        removeNivel(nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
   }
 
   static final public void Paramlist() throws ParseException {
@@ -1334,13 +1334,12 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(FUNCTION);
-        listaChaves.clear();
-        nivelCorrente--;
-
-        System.out.println("Returns: " + nReturn);
         if(nReturn < 1)
             System.out.println("Erro! Function precisa de retorno!");
         nReturn = 0;
+        removeNivel(nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
   }
 
   static final public void Typedeclare() throws ParseException {
@@ -2025,6 +2024,21 @@ static Token valor = null;
         {
             dado = TabelaSimb.get(chave);
             dado.setNBytes(nbytes);
+        }
+  }
+
+  static final public void removeNivel(Integer nivel) throws ParseException {
+    Integer chave;
+    Enumeration t = TabelaSimb.keys();
+    Dado dado;
+        while(t.hasMoreElements())
+        {
+            chave = (Integer) t.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            if(dado.getNivel() == nivel) {
+                TabelaSimb.remove(chave);
+            }
         }
   }
 

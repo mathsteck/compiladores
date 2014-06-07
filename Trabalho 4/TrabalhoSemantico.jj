@@ -313,12 +313,12 @@ void Procdeclare() :
     "(" (Paramlist())? ")" (Block())?
     <END> <PROCEDURE>
     {
-        listaChaves.clear();
-        nivelCorrente--;
-
         if(procedureReturn > 0)
             System.out.println("Erro! Procedure não pode ter return!!");
         procedureReturn = 0;
+        removeNivel(nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
     }
 }
 void Paramlist() : {}{ (Parameter() ("," Parameter())* ) }
@@ -371,13 +371,13 @@ void Funcdeclare() :
     (Block())?
     <END> <FUNCTION>
     {
-        listaChaves.clear();
-        nivelCorrente--;
 
-        System.out.println("Returns: " + nReturn);
         if(nReturn < 1)
             System.out.println("Erro! Function precisa de retorno!");
         nReturn = 0;
+        removeNivel(nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
     }
 }
 void Typedeclare() : {} { <TYPE> <IDENTIFIER> "(" Parameter() ")" (Block())? <END> <TYPE>}
@@ -572,9 +572,27 @@ void atualizaNBytes(Integer nbytes) :
     }
 }
 
-void initBuiltins():
+void removeNivel(Integer nivel) :
 {
+    Integer chave;
+    Enumeration t = TabelaSimb.keys();
+    Dado dado;
 }
+{
+    {
+        while(t.hasMoreElements())
+        {
+            chave = (Integer) t.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            if(dado.getNivel() == nivel) {
+                TabelaSimb.remove(chave);
+            }
+        }
+    }
+}
+
+void initBuiltins(): {}
 {
     {
         //Atom
