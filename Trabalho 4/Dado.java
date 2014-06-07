@@ -2,9 +2,8 @@ import java.util.*;
 
 public class Dado {
     /* comum a todas as categorias */
-    private String identificador;
     private Integer nivel;
-    private String categoria;
+
     private Integer tipo;
 
     /* comum entre as categorias: variavel, parametro procedimento e funcao */
@@ -13,14 +12,18 @@ public class Dado {
     /* existe na categoria: tipo */
     private Integer nbytes;
 
+    /* existe nas categorias: funcao e procedimento */
+    private Integer nparametros;
+
+    private String identificador;
+    private String categoria;
+
     /* existe na categoria: constante */
     private String valor;
 
     /* existe na categoria: parametro */
-    private String classe_transf;
+    private String classeTransf;
 
-    /* existe nas categorias: funcao e procedimento */
-    private Integer nparametros;
 
     public Dado(String identificador, Integer nivel) {
         this.identificador = identificador;
@@ -37,12 +40,12 @@ public class Dado {
         this.categoria = categoria;
     }
 
-    public String getClasse_transf() {
-        return classe_transf;
+    public String getClasseTransf() {
+        return classeTransf;
     }
 
-    public void setClasse_transf(String classe_transf) {
-        this.classe_transf = classe_transf;
+    public void setClasse_transf(String classeTransf) {
+        this.classeTransf = classeTransf;
     }
 
     public Integer getEndereco() {
@@ -61,11 +64,11 @@ public class Dado {
         this.identificador = identificador;
     }
 
-    public Integer getNbytes() {
+    public Integer getNBytes() {
         return nbytes;
     }
 
-    public void setNbytes(Integer nbytes) {
+    public void setNBytes(Integer nbytes) {
         this.nbytes = nbytes;
     }
 
@@ -77,11 +80,11 @@ public class Dado {
         this.nivel = nivel;
     }
 
-    public Integer getNparametros() {
+    public Integer getNParametros() {
         return nparametros;
     }
 
-    public void setNparametros(Integer nparametros) {
+    public void setNParametros(Integer nparametros) {
         this.nparametros = nparametros;
     }
 

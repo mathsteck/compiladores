@@ -5,17 +5,20 @@ public class TrabalhoSemantico implements TrabalhoSemanticoConstants {
 
 static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
 static Integer indexTabela = 0;
-static String categoriaLocal;
 static Integer nivelCorrente = 0;
+static String flagCategoria = "";
 static Dado dado = new Dado();
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
 
     public static void main(String[] args){
         try{
-            new TrabalhoSemantico(new java.io.FileInputStream(args[0])).Start();
-            System.out.println("SUCESSO");
+            TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
+            t.initBuiltins();
+            t.Start();
+
             imprimeTabela();
+            System.out.println("SUCESSO");
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -961,8 +964,18 @@ static Token valor = null;
   }
 
   static final public void Vardeclare() throws ParseException {
-    jj_consume_token(IDENTIFIER);
+    Token t;
+    t = jj_consume_token(IDENTIFIER);
     Identlist();
+        atualizaCategoria(t.toString());
+        Integer chave = buscaTipo(t.toString());
+
+        if(chave > -1) {
+            Dado builtin = TabelaSimb.get(chave);
+            atualizaTipo(chave);
+            atualizaNBytes(builtin.getNBytes());
+        }
+        listaChaves.clear();
   }
 
   static final public void Scopemodifier() throws ParseException {
@@ -1010,7 +1023,6 @@ static Token valor = null;
     case 75:
       jj_consume_token(75);
       Expression();
-        System.out.println("Opcional");
       break;
     default:
       jj_la1[44] = jj_gen;
@@ -1019,7 +1031,9 @@ static Token valor = null;
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
         tmp.setNivel(nivelCorrente);
-        if(valor != null) {
+
+        System.out.println(flagCategoria);
+        if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
@@ -1029,9 +1043,12 @@ static Token valor = null;
 
   static final public void Constdeclare() throws ParseException {
     Token t;
+    flagCategoria = "constant";
     t = jj_consume_token(CONSTANT);
     Identlist();
         atualizaCategoria(t.toString());
+        listaChaves.clear();
+        flagCategoria = "";
   }
 
   static final public void Enumdeclare() throws ParseException {
@@ -1867,17 +1884,37 @@ static Token valor = null;
         }
   }
 
+  static final public Integer buscaTipo(String Identifier) throws ParseException {
+    Integer chave;
+    Enumeration elemento = TabelaSimb.keys();
+    Dado dado;
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            if(dado.getIdentificador().equals(Identifier))
+                {if (true) return chave;}
+        }
+        {if (true) return -1;}
+    throw new Error("Missing return statement in function");
+  }
+
   static final public void imprimeTabela() throws ParseException {
     Integer chave;
     Enumeration elemento = TabelaSimb.keys();
     Dado dado;
-        while(elemento.hasMoreElements())
-        {
+        System.out.println("");
+        System.out.println("id Ident Nivel Categ Tipo End NBytes Valor ClassT NParam");
+        System.out.println("--------------------------------------------------------");
+        while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
             dado = TabelaSimb.get(chave);
 
-            System.out.println(chave + ") " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getIdentificador() + " " + dado.getValor());
+            System.out.print(chave + ") " + dado.getIdentificador() + " " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getTipo());
+            System.out.print(" " + dado.getEndereco() + " " + dado.getNBytes() + " " + dado.getValor() + " " + dado.getClasseTransf() + " " + dado.getNParametros() + "\u005cn");
         }
+
+        System.out.println("");
   }
 
   static final public void atualizaCategoria(String Categoria) throws ParseException {
@@ -1887,6 +1924,48 @@ static Token valor = null;
             dado = TabelaSimb.get(chave);
             dado.setCategoria(Categoria);
         }
+  }
+
+  static final public void atualizaTipo(Integer Tipo) throws ParseException {
+    Dado dado;
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setTipo(Tipo);
+        }
+  }
+
+  static final public void atualizaNBytes(Integer nbytes) throws ParseException {
+    Dado dado;
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setNBytes(nbytes);
+        }
+  }
+
+  static final public void initBuiltins() throws ParseException {
+        //Atom
+        Dado atom = new Dado();
+        atom.setIdentificador("atom");
+        atom.setCategoria("tipo");
+        atom.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        atom.setNBytes(5);
+        atom.setNivel(0);
+
+        insereTabela(atom);
+
+        //Integer
+        Dado integer = new Dado();
+        integer.setIdentificador("integer");
+        integer.setCategoria("tipo");
+        integer.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        integer.setNBytes(4);
+        integer.setNivel(0);
+
+        insereTabela(integer);
 
         listaChaves.clear();
   }
@@ -1982,8 +2061,8 @@ static Token valor = null;
     finally { jj_save(12, xla); }
   }
 
-  static private boolean jj_3_6() {
-    if (jj_3R_20()) return true;
+  static private boolean jj_3R_60() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
@@ -1992,35 +2071,13 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_53() {
-    if (jj_scan_token(CONSTANT)) return true;
-    if (jj_3R_60()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_39() {
     if (jj_3R_53()) return true;
     return false;
   }
 
-  static private boolean jj_3R_48() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(20)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(21)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(22)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(23)) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_60() {
-    if (jj_3R_65()) return true;
+  static private boolean jj_3R_65() {
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -2041,12 +2098,6 @@ static Token valor = null;
     }
     }
     }
-    return false;
-  }
-
-  static private boolean jj_3R_52() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_3R_60()) return true;
     return false;
   }
 
@@ -2071,11 +2122,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_65() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
   static private boolean jj_3_1() {
     if (jj_3R_19()) return true;
     return false;
@@ -2084,6 +2130,12 @@ static Token valor = null;
   static private boolean jj_3R_24() {
     if (jj_scan_token(ELSIF)) return true;
     if (jj_3R_41()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_52() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_3R_60()) return true;
     return false;
   }
 
@@ -2237,11 +2289,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3_8() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
   static private boolean jj_3_10() {
     if (jj_3R_25()) return true;
     if (jj_3R_26()) return true;
@@ -2273,11 +2320,6 @@ static Token valor = null;
     if (jj_scan_token(65)) return true;
     }
     }
-    return false;
-  }
-
-  static private boolean jj_3_4() {
-    if (jj_3R_22()) return true;
     return false;
   }
 
@@ -2478,6 +2520,16 @@ static Token valor = null;
     return false;
   }
 
+  static private boolean jj_3_8() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_4() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_41() {
     Token xsp;
     xsp = jj_scanpos;
@@ -2600,11 +2652,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3_7() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_54() {
     if (jj_scan_token(ENUM)) return true;
     Token xsp;
@@ -2626,11 +2673,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3_3() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_66() {
     Token xsp;
     xsp = jj_scanpos;
@@ -2639,8 +2681,45 @@ static Token valor = null;
     return false;
   }
 
+  static private boolean jj_3_7() {
+    if (jj_3R_23()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_3() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_53() {
+    if (jj_scan_token(CONSTANT)) return true;
+    if (jj_3R_60()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_40() {
     if (jj_3R_54()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_6() {
+    if (jj_3R_20()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_48() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(20)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(21)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(22)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(23)) return true;
+    }
+    }
+    }
     return false;
   }
 

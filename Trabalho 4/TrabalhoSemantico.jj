@@ -6,17 +6,20 @@ public class TrabalhoSemantico{
 
 static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
 static Integer indexTabela = 0;
-static String categoriaLocal;
 static Integer nivelCorrente = 0;
+static String flagCategoria = "";
 static Dado dado = new Dado();
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
 
     public static void main(String[] args){
         try{
-            new TrabalhoSemantico(new java.io.FileInputStream(args[0])).Start();
-            System.out.println("SUCESSO");
+            TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
+            t.initBuiltins();
+            t.Start();
+
             imprimeTabela();
+            System.out.println("SUCESSO");
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -26,6 +29,7 @@ static Token valor = null;
         }
     }
 }
+
 PARSER_END (TrabalhoSemantico)
 
 /* Eliminando comentarios e espacos */
@@ -139,7 +143,24 @@ void Assignmono() : {} { Varexp() "=" Expression()}
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
 void Return() : {} { <RETURN> Expression() }
-void Vardeclare() : {} { <IDENTIFIER> Identlist() }
+void Vardeclare() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER> Identlist()
+    {
+        atualizaCategoria(t.toString());
+        Integer chave = buscaTipo(t.toString());
+
+        if(chave > -1) {
+            Dado builtin = TabelaSimb.get(chave);
+            atualizaTipo(chave);
+            atualizaNBytes(builtin.getNBytes());
+        }
+        listaChaves.clear();
+    }
+}
 void Scopemodifier() : {} { <GLOBAL> | <PUBLIC> | <EXPORT> | <OVERRIDE> }
 
 void Identlist() : {}{ Ident() ("," Ident())* }
@@ -149,16 +170,14 @@ void Ident() :
     Token t;
 }
 {
-    t = <IDENTIFIER>
-    ("=" Expression()
-    {
-        System.out.println("Opcional");
-    })?
+    t = <IDENTIFIER> ("=" Expression())?
     {
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
         tmp.setNivel(nivelCorrente);
-        if(valor != null) {
+
+        System.out.println(flagCategoria);
+        if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
@@ -170,11 +189,14 @@ void Ident() :
 void Constdeclare() :
 {
     Token t;
+    flagCategoria = "constant";
 }
 {
     t = <CONSTANT> Identlist()
     {
         atualizaCategoria(t.toString());
+        listaChaves.clear();
+        flagCategoria = "";
     }
 }
 
@@ -254,6 +276,25 @@ void insereTabela(Dado dado) :
     }
 }
 
+Integer buscaTipo(String Identifier) :
+{
+    Integer chave;
+    Enumeration elemento = TabelaSimb.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            if(dado.getIdentificador().equals(Identifier))
+                return chave;
+        }
+        return -1;
+    }
+}
+
 void imprimeTabela() :
 {
     Integer chave;
@@ -262,13 +303,19 @@ void imprimeTabela() :
 }
 {
     {
-        while(elemento.hasMoreElements())
-        {
+
+        System.out.println("");
+        System.out.println("id Ident Nivel Categ Tipo End NBytes Valor ClassT NParam");
+        System.out.println("--------------------------------------------------------");
+        while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
             dado = TabelaSimb.get(chave);
 
-            System.out.println(chave + ") " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getIdentificador() + " " + dado.getValor());
+            System.out.print(chave + ") " + dado.getIdentificador() + " " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getTipo());
+            System.out.print(" " + dado.getEndereco() + " " + dado.getNBytes() + " " + dado.getValor() + " " + dado.getClasseTransf() + " " + dado.getNParametros() + "\n");
         }
+
+        System.out.println("");
     }
 }
 
@@ -283,6 +330,64 @@ void atualizaCategoria(String Categoria) :
             dado = TabelaSimb.get(chave);
             dado.setCategoria(Categoria);
         }
+
+    }
+}
+
+void atualizaTipo(Integer Tipo) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setTipo(Tipo);
+        }
+    }
+}
+
+void atualizaNBytes(Integer nbytes) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setNBytes(nbytes);
+        }
+    }
+}
+
+void initBuiltins():
+{
+}
+{
+    {
+        //Atom
+        Dado atom = new Dado();
+        atom.setIdentificador("atom");
+        atom.setCategoria("tipo");
+        atom.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        atom.setNBytes(5);
+        atom.setNivel(0);
+
+        insereTabela(atom);
+
+        //Integer
+        Dado integer = new Dado();
+        integer.setIdentificador("integer");
+        integer.setCategoria("tipo");
+        integer.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        integer.setNBytes(4);
+        integer.setNivel(0);
+
+        insereTabela(integer);
 
         listaChaves.clear();
     }
