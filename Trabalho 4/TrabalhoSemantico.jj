@@ -8,6 +8,8 @@ static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
 static Integer indexTabela = 0;
 static Integer nivelCorrente = 0;
 static String flagCategoria = "";
+static Integer flagBranchStmt = 0;
+static Integer nReturn = 0;
 static Dado dado = new Dado();
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
@@ -133,18 +135,86 @@ void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
 void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
 void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
 void Stringlit() : {} { <STRING> }
-void Forstmt() : {} { <FOR> Foridx() (Labelstmt())? <DO> (Block())? <END> <FOR> }
+void Forstmt() :
+{
+    flagBranchStmt++;
+}
+{
+    <FOR> Foridx()
+    (Labelstmt())? <DO> (Block())?
+    <END> <FOR>
+    {
+        flagBranchStmt--;
+    }
+}
 void Foridx() : {} { <IDENTIFIER> "=" Expression() <TO> Expression() ( <BY> Expression())? }
-void Foreachstmt() : {} { <FOREACH> (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO> (Block())? <END> <FOREACH> }
+void Foreachstmt() :
+{
+    flagBranchStmt++;
+}
+{
+    <FOREACH>
+    {
+        flagBranchStmt++;
+    }
+    (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO> (Block())?
+    <END> <FOREACH>
+    {
+        flagBranchStmt--;
+    }
+}
 void Labelstmt() : {} { <LABEL> Stringlit() }
-void Whilestmt() : {} { <WHILE> Expression() (Labelstmt())? <DO> (Block())? <END> <WHILE> }
-void Loopstmt() : {} { <LOOP> (Labelstmt())? <DO> Block() <UNTIL> Expression() <END> <LOOP>  }
+void Whilestmt() :
+{
+    flagBranchStmt++;
+}
+{
+    <WHILE>
+    Expression() (Labelstmt())? <DO> (Block())?
+    <END> <WHILE>
+    {
+        flagBranchStmt--;
+    }
+}
+void Loopstmt() :
+{
+    flagBranchStmt++;
+}
+{
+    <LOOP> (Labelstmt())? <DO> Block() <UNTIL> Expression()
+    <END> <LOOP>
+    {
+        flagBranchStmt--;
+    }
+}
 void Gotostmt() : {} { <GOTO> Labelstmt() }
-void Ifstmt() : {} { Iftest() (LOOKAHEAD(2) Elsif())* ( Else())? <END> <IF>}
+void Ifstmt() :
+{
+    flagBranchStmt++;
+}
+{
+    Iftest()
+    (LOOKAHEAD(2) Elsif())* ( Else())?
+    <END> <IF>
+    {
+        flagBranchStmt--;
+    }
+}
 void Iftest() : {} { <IF> Expression() (Labelstmt())? <THEN> (Block())?  }
 void Elsif() : {} { <ELSIF> Expression() <THEN> ( Block())? }
 void Else() : {} { <ELSE> (Block())? }
-void Switchstmt() : {} { Switchtest() (Case())+ (Caseelse())? <END> <SWITCH> }
+void Switchstmt() :
+{
+    flagBranchStmt++;
+}
+{
+    Switchtest()
+    (Case())+ (Caseelse())?
+    <END> <SWITCH>
+    {
+        flagBranchStmt--;
+    }
+}
 void Switchtest() : {} { <SWITCH> Expression() (Labelstmt())? <DO> }
 void Case() : {} { <CASE> Caselist() <THEN> (Block())?}
 void Caselist() : {} { Expression() ("," Expression())* }
@@ -152,7 +222,15 @@ void Caseelse() : {} { <ELSE> ( Block())?}
 void Assignmono() : {} { Varexp() "=" Expression()}
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
-void Return() : {} { <RETURN> Expression() }
+void Return() :
+{
+    System.out.println("branch: " + flagBranchStmt);
+    if(flagBranchStmt == 0)
+        nReturn++;
+}
+{
+    <RETURN> Expression()
+}
 void Vardeclare() :
 {
     Token t;
@@ -216,7 +294,30 @@ void Enumtype() : {} { <TYPE> (<BY> Enumdelta())? Identlist() <END> <TYPE>}
 void Scopedeclare() : {} { (Scopemodifier())? ( Procdeclare() | Funcdeclare() | Typedeclare() | Vardeclare() | Constdeclare() | Enumdeclare() ) }
 void Procdeclare() : {} { <PROCEDURE> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <PROCEDURE> {nivelCorrente--;} }
 void Paramlist() : {}{ (Parameter() ("," Parameter())* ) }
-void Parameter() : {} { <IDENTIFIER> <IDENTIFIER>}
+void Parameter() :
+{
+    Dado dado;
+    Token t, n;
+}
+{
+    t = <IDENTIFIER> n = <IDENTIFIER>
+    {
+        Integer chave = buscaTipo(t.toString());
+
+        if(chave > -1) {
+            dado = new Dado();
+            dado.setIdentificador(n.toString());
+            dado.setNivel(nivelCorrente);
+            dado.setTipo(chave);
+            dado.setCategoria("parameter");
+
+            insereTabela(dado);
+        }
+        else {
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+        }
+    }
+}
 void Funcdeclare() :
 {
     Dado dado;
@@ -235,11 +336,20 @@ void Funcdeclare() :
         listaChaves.clear();
         nivelCorrente++;
     }
-    "(" (Paramlist())? ")"
+    "("(Paramlist() {
+        dado.setNParametros(listaChaves.size());
+    }
+    )?")"
     (Block())?
     <END> <FUNCTION>
     {
+        listaChaves.clear();
         nivelCorrente--;
+
+        System.out.println("Returns: " + nReturn);
+        if(nReturn < 1)
+            System.out.println("Erro! Function precisa de retorno!");
+        nReturn = 0;
     }
 }
 void Typedeclare() : {} { <TYPE> <IDENTIFIER> "(" Parameter() ")" (Block())? <END> <TYPE>}
@@ -407,6 +517,19 @@ void atualizaTipo(Integer Tipo) :
     }
 }
 
+void atualizaNParam(Integer n) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setNParametros(n);
+        }
+    }
+}
 void atualizaNBytes(Integer nbytes) :
 {
     Dado dado;
