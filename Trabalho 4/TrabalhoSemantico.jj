@@ -96,8 +96,16 @@ TOKEN: { <#USCORE: "_"> }
 TOKEN: { <SYMBOL: ["!"] | ["#"] | ["%"] | [":"-";"] | ["@"] | ["^"] | ["`"] | ["|"] | ["~"]> }
 TOKEN: { <#CHAR: ( <SYMBOL> | <ALPHA> | <DIGITDEC>  ) > }
 TOKEN: { <#ESCCHAR: ["\0"-"\b"] | ["\f"-"\r"]> }
-TOKEN: { <STRING: (("\""( "\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"" | "\'"( "\\n" | <CHAR>  | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'" |
-"\"\"\"" ("\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\"")) | ("b\""(<DIGITBIN> | " " | <USCORE>)+ "\"") | ("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") > }
+TOKEN:
+{
+    <STRING: (("\""( "\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
+              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"" | "\'"( "\\n" | <CHAR>
+              | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
+              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'" | "\"\"\"" ("\\n"
+              | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
+              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\"")) | ("b\""(<DIGITBIN>
+              | " " | <USCORE>)+ "\"") | ("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") >
+}
 TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" > }
 TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
 TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }     
@@ -111,7 +119,11 @@ TOKEN: { <BIN: <DIGITBIN> > }
 void Start() : {} { Stmtblk() <EOF> }
 void Stmtblk() : {} { Statement() (Statement())* }
 void Block() : {} { Statementblock() (Statementblock())* }
-void Statement() : {} { Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt() | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Look() }
+void Statement() : {}
+{
+    Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt()
+    | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Look()
+}
 void Statementblock() : {} { Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt() | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Lookblock() }
 void Look() : {} { "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Scopedeclare() | LOOKAHEAD(2) Assignmono() | Assignmulti() }
 void Lookblock() : {} { "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Scopeblock() | LOOKAHEAD(2) Assignmono() | Assignmulti() }
@@ -202,10 +214,34 @@ void Enumval() : {} { (<BY> Enumdelta())? Identlist() }
 void Enumdelta() : {} { ("+" | "-" | "*" | "/")? Expression() }
 void Enumtype() : {} { <TYPE> (<BY> Enumdelta())? Identlist() <END> <TYPE>}
 void Scopedeclare() : {} { (Scopemodifier())? ( Procdeclare() | Funcdeclare() | Typedeclare() | Vardeclare() | Constdeclare() | Enumdeclare() ) }
-void Procdeclare() : {} { <PROCEDURE> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <PROCEDURE> }
-void Paramlist() : {} { (Parameter() ("," Parameter())* ) }
+void Procdeclare() : {} { <PROCEDURE> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <PROCEDURE> {nivelCorrente--;} }
+void Paramlist() : {}{ (Parameter() ("," Parameter())* ) }
 void Parameter() : {} { <IDENTIFIER> <IDENTIFIER>}
-void Funcdeclare() : {} { <FUNCTION> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <FUNCTION> }
+void Funcdeclare() :
+{
+    Dado dado;
+    Token t, s;
+}
+{
+    s = <FUNCTION>
+    t = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(t.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(s.toString());
+
+        insereTabela(dado);
+        listaChaves.clear();
+        nivelCorrente++;
+    }
+    "(" (Paramlist())? ")"
+    (Block())?
+    <END> <FUNCTION>
+    {
+        nivelCorrente--;
+    }
+}
 void Typedeclare() : {} { <TYPE> <IDENTIFIER> "(" Parameter() ")" (Block())? <END> <TYPE>}
 void Expression() : {} { Seqexpr()| Binexpr() }
 void Binexpr() : {} { Relexpr() (Binop() Relexpr())* }
@@ -334,7 +370,8 @@ void imprimeTabela() :
             dado = TabelaSimb.get(chave);
 
             System.out.print(chave + ") " + dado.getIdentificador() + " " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getTipo());
-            System.out.print(" " + dado.getEndereco() + " " + dado.getNBytes() + " " + dado.getValor() + " " + dado.getClasseTransf() + " " + dado.getNParametros() + "\n");
+            System.out.print(" " + dado.getEndereco() + " " + dado.getNBytes() + " " + dado.getValor() + " ");
+            System.out.print(dado.getClasseTransf() + " " + dado.getNParametros() + "\n");
         }
 
         System.out.println("");
