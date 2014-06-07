@@ -9,7 +9,7 @@ static Integer indexTabela = 0;
 static Integer nivelCorrente = 0;
 static String flagCategoria = "";
 static Integer flagBranchStmt = 0;
-static Integer nReturn = 0;
+static Integer nReturn = 0, procedureReturn = 0;
 static Dado dado = new Dado();
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
@@ -224,9 +224,10 @@ void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Express
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
 void Return() :
 {
-    System.out.println("branch: " + flagBranchStmt);
     if(flagBranchStmt == 0)
         nReturn++;
+
+    procedureReturn++;
 }
 {
     <RETURN> Expression()
@@ -292,7 +293,34 @@ void Enumval() : {} { (<BY> Enumdelta())? Identlist() }
 void Enumdelta() : {} { ("+" | "-" | "*" | "/")? Expression() }
 void Enumtype() : {} { <TYPE> (<BY> Enumdelta())? Identlist() <END> <TYPE>}
 void Scopedeclare() : {} { (Scopemodifier())? ( Procdeclare() | Funcdeclare() | Typedeclare() | Vardeclare() | Constdeclare() | Enumdeclare() ) }
-void Procdeclare() : {} { <PROCEDURE> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <PROCEDURE> {nivelCorrente--;} }
+void Procdeclare() :
+{
+    Dado dado;
+    Token t, s;
+}
+{
+    t = <PROCEDURE> s = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(s.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(t.toString());
+
+        insereTabela(dado);
+        listaChaves.clear();
+        nivelCorrente++;
+    }
+    "(" (Paramlist())? ")" (Block())?
+    <END> <PROCEDURE>
+    {
+        listaChaves.clear();
+        nivelCorrente--;
+
+        if(procedureReturn > 0)
+            System.out.println("Erro! Procedure não pode ter return!!");
+        procedureReturn = 0;
+    }
+}
 void Paramlist() : {}{ (Parameter() ("," Parameter())* ) }
 void Parameter() :
 {
@@ -324,13 +352,13 @@ void Funcdeclare() :
     Token t, s;
 }
 {
-    s = <FUNCTION>
-    t = <IDENTIFIER>
+    t = <FUNCTION>
+    s = <IDENTIFIER>
     {
         dado = new Dado();
-        dado.setIdentificador(t.toString());
+        dado.setIdentificador(s.toString());
         dado.setNivel(nivelCorrente);
-        dado.setCategoria(s.toString());
+        dado.setCategoria(t.toString());
 
         insereTabela(dado);
         listaChaves.clear();
