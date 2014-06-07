@@ -1,0 +1,4 @@
+while sequence(Line) entry do
+	proc(Line)
+entry
+	Line = gets(handle)

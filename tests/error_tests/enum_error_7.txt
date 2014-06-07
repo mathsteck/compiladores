@@ -1,0 +1,1 @@
+enum type RGBA RED, GREEN, BLUE, ALPHA end

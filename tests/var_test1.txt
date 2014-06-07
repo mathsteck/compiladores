@@ -1,0 +1,9 @@
+integer x
+atom x
+object a
+object x,a
+global integer x
+global object x
+global atom x
+integer x = 10
+integer x = n*n

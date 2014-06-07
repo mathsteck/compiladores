@@ -1,0 +1,3 @@
+loop do
+	a = a * 2
+	x = x - 1

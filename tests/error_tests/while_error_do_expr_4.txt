@@ -1,0 +1,2 @@
+while  do
+	x = x - 1

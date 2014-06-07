@@ -1,0 +1,14 @@
+function foo()
+	return 2+2
+
+function foo(integer n )
+	return 2+2
+
+function foo(integer n=1)
+	return 2+2
+
+function foo(sequence s)
+	return 2+2
+
+function foo(integer n, sequence s)
+	return 2+2

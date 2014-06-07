@@ -1,0 +1,7 @@
+javacc TrabalhoSemantico.jj
+javac *.java
+for file in tests/*.epy; do
+    echo "Testing ${file##*/} ..."
+    java TrabalhoSemantico tests/${file##*/}
+    echo
+done

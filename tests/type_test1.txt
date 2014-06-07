@@ -1,0 +1,5 @@
+type hour(integer x)
+	return x >0
+
+global type hour(integer x)
+	return x >0

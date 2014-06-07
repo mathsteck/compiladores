@@ -1,0 +1,9 @@
+procedure foo()
+
+procedure foo(n)
+
+procedure foo(10)
+
+procedure foo(10, x)
+
+procedure foo({1, 2, 3})

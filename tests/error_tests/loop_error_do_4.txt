@@ -1,0 +1,4 @@
+loop
+	a = a * 2
+	x = x - 1
+	until x<=0

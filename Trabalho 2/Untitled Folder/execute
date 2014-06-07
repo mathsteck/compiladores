@@ -1,0 +1,3 @@
+javacc main.jj
+javac *.java
+java TrabalhoLexico ex1.epy

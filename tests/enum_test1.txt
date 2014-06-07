@@ -1,0 +1,7 @@
+enum ONE, TWO, THREE, FOUR
+enum ONE, TWO = 3, THREE, FOUR
+enum type RGBA RED, GREEN, BLUE, ALPHA end type
+enum by 2 A,B,C,D
+enum by -2 A,B,C,D
+enum by * 2 A,B,C,D
+enum by / 2 A,B,C,D

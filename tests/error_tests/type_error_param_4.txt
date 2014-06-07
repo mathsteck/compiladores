@@ -1,0 +1,2 @@
+type hour(integer x, integer y)
+	return x >0

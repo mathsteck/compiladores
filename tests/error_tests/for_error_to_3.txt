@@ -1,0 +1,3 @@
+for j = 1 10 do
+	printf(1, "%d\n", i)
+

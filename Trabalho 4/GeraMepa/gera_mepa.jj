@@ -1,0 +1,541 @@
+PARSER_BEGIN(gera_mepa)
+
+import java.util.*;
+
+public class gera_mepa {
+  static Hashtable<Integer, Dados> TabelaSimb = new Hashtable<Integer, Dados>();
+  static Dados temp;
+  static int cont = 0;
+
+  static int cont_label = 2;
+  static int ender = 0;
+  static int ender_param = -5;
+  static int nivelcorr = 0;
+  static int nivel_num = 0;
+
+  static int flag_writelong = 0;
+  static int flag_readlong = 0;
+  static int flag_writeline = 0;
+  static int flag_menos = 0;
+  static int flag_main = 0;
+  static int flag_param = 0;
+
+  static int num_param = 0;
+
+  public static void main(String[] args)
+  {
+    try {
+          new gera_mepa(new java.io.FileInputStream(args[0])).Start();
+    } catch (java.io.FileNotFoundException ex) {
+      System.out.println("Arquivo " + args[0] + "nao foi encontrado");
+      System.exit(-1);
+    } catch (ParseException ex) {
+          System.out.println(ex.getMessage());
+      System.exit(-1);
+    } catch (TokenMgrError ex) {
+          System.out.println(ex.getMessage());
+      System.exit(-1);
+    }
+  }
+}
+
+PARSER_END(gera_mepa)
+
+//Tokes que serao pulados
+SKIP:  { " " | "\t" | "\n" | "\r" | <"//" (~["\n"])* "\n"> }
+
+//Palavras reservadas
+TOKEN: { <IF : "if"> }
+TOKEN: { <ELSE : "else"> }
+TOKEN: { <WHILE : "while"> }
+TOKEN: { <VOID : "void"> }
+
+//Identificadores
+TOKEN: { <NUMBER : <DIGITS> > }
+TOKEN: { <IDENT : (<LETTER>(<LETTER>|<DIGITS>|"_")* | "int" | "main" | "WriteLong" | "WriteLine" | "ReadLong") > }
+TOKEN: { <#DIGITS : (["0"-"9"])+> }
+TOKEN: { <#LETTER : (["a"-"z","A"-"Z"])> }
+
+//Inicio
+void Start() : {} { Program() | <EOF> }
+
+//Programa
+void Program() :
+{
+  int aux;
+}
+{
+  //Inserção dos dados pré-definidos na tabela
+  { 
+    TabelaSimb.put(cont++, new Dados("true", nivelcorr, "constante", "0", -1));
+      TabelaSimb.put(cont++, new Dados("false", nivelcorr, "constante", "0", -1));
+    Gera("null", "INPP", "null", "null");
+  }
+
+  (VariableDeclaration())* {Gera("null", "DSVS", "L1", "null");} {ender = 0;} ProcedureDeclaration() (ProcedureDeclaration())*
+
+  { 
+    aux = BuscaN(0, "variavel"); Gera("null", "DMEM", String.valueOf(aux), "null"); 
+    Gera("null", "PARA", "null", "null"); 
+    Gera("null", "FIM", "null", "null"); 
+    //Imprime(); 
+  }
+}
+
+//Declarações
+void ProcedureDeclaration() :
+{
+  int aux;
+}
+{
+  <VOID> ProcedureHeading() "{" ProcedureBody() "}"
+  {
+    aux = BuscaN(nivelcorr, "variavel");
+    if(aux != 0) {
+      Gera("null", "DMEM", String.valueOf(aux), "null");
+      Retira(nivelcorr, "variavel");
+    }
+    nivelcorr = 0;
+
+    if(flag_main == 0)
+      Gera("null", "RTPR", String.valueOf(num_param), "null");
+    num_param = 0;
+  }
+}
+
+
+
+void ProcedureBody() : {} {(LOOKAHEAD(2) VariableDeclaration())* StatementSequence()}
+
+void ProcedureHeading() : 
+{
+  Token t;
+}
+{
+  t = <IDENT> 
+  { 
+    if( (t.image).equals("main") ){
+      flag_main = 1;
+      Gera("L1", "NADA", "null", "null");
+      TabelaSimb.put(cont++, new Dados(String.valueOf(t.image), nivelcorr, "procedimento", "L1", 0));
+    }
+  }
+  {nivelcorr++;}
+  "(" [FormalParameters()] ")"
+  {
+    if(!(t.image).equals("main")){
+      flag_main = 0;
+      TabelaSimb.put(cont++,new Dados(String.valueOf(t.image),(nivelcorr-1),"procedimento","L"+String.valueOf(cont_label),num_param));
+      Gera("L"+String.valueOf(cont_label++), "ENPR", "1", "null");
+    }
+  }
+}
+
+void FormalParameters() : 
+{
+  int i, j;
+  Token t[] = new Token[10];
+}
+{
+  {ender_param = -5; i = 0;}
+  t[i] = FPSection() 
+  {num_param++; i++;} 
+  ("," t[i] = FPSection() {num_param++; i++;})*
+
+  {
+    for(j = 0; j < i; j++){
+      TabelaSimb.put(cont++, new Dados(t[j].image, nivelcorr, "parametro", String.valueOf(ender_param-(i-1)), -1));
+      ender_param++;
+    }
+  }
+}
+
+
+Token FPSection() : 
+{
+  Token t;
+}
+{ 
+  Type() t = <IDENT>
+  {return t;}
+}
+void VariableDeclaration() : {} { Type() IdentList() ";" }
+
+void IdentList() :
+{
+  Token t;
+  int n;
+}
+{
+  t = <IDENT>
+  {
+    TabelaSimb.put(cont++, new Dados(t.image, nivelcorr, "variavel", String.valueOf(ender), -1));
+    ender++;
+    n = 1;
+  }
+  ("," t = <IDENT> 
+  {
+    TabelaSimb.put(cont++, new Dados(t.image, nivelcorr, "variavel", String.valueOf(ender), -1));
+    ender++;
+    n = n + 1; } 
+  )* 
+  { Gera("null", "AMEM", String.valueOf(n), "null"); }
+}
+
+void Type() : {} { <IDENT> }
+
+//Comandos
+void StatementSequence() : {} { Statement() (Statement())* }
+void Statement() : {} { (LOOKAHEAD(2) Assignment() | ProcedureCall() | IfStatement() | WhileStatement()) } //Mudei essa linha para verificar
+
+
+void WhileStatement() :
+{
+  String aux, aux2;
+}
+{ 
+  <WHILE> 
+  {
+    Gera("L"+String.valueOf(cont_label), "NADA", "null", "null");
+      aux = "L"+String.valueOf(cont_label++); 
+  }
+  "(" Logical_OR() ")" 
+  {
+    Gera("null", "DSVF", "L"+String.valueOf(cont_label), "null");
+    aux2 = "L"+String.valueOf(cont_label++); 
+  }
+  "{" StatementSequence() "}"
+  {
+    Gera("null", "DSVS", aux, "null");
+    Gera(aux2, "NADA", "null", "null");
+  }
+}
+
+void IfStatement() : 
+{
+  Token t;
+  String aux, aux2;
+}
+{ 
+  t = <IF> "(" Logical_OR() ")"
+
+  {
+    Gera("null", "DSVF", "L"+String.valueOf(cont_label), "null");
+      aux = "L"+String.valueOf(cont_label++); 
+  }
+
+  "{" StatementSequence() "}" 
+  [ t = <ELSE> 
+
+  { 
+    Gera("null", "DSVS", "L"+String.valueOf(cont_label), "null");
+      aux2 = "L"+String.valueOf(cont_label++);
+      Gera(aux, "NADA", "null", "null"); 
+  }
+  
+  "{" StatementSequence() "}" 
+  { Gera(aux2, "NADA", "null", "null"); } ] 
+
+  { 
+    if((t.image).equals("if"))
+      Gera(aux, "NADA", "null", "null"); 
+  }  
+}
+
+void ProcedureCall() : 
+{
+  Token t;
+  int flag = 0;
+}
+{
+  t = <IDENT>
+  {
+    if((t.image).equals("WriteLong")){
+      flag_writelong = 1;
+    } else if((t.image).equals("ReadLong")){
+      Gera("null", "LEIT", "null", "null");
+      flag_readlong = 1;
+    } else if((t.image).equals("WriteLine")){
+      Gera("null", "IMPR", "null", "null");
+      flag_writeline = 1;
+    } else {
+      flag = 1;
+    }
+  }
+  {flag_param = 1;}
+  "(" [ ExpList() ] ")" ";"
+  {
+    if(flag == 1){
+      temp = Busca(String.valueOf(t.image));
+      if(flag_main == 1)
+        Gera("null", "CHPR", temp.endereco, String.valueOf(temp.nivel));
+      else
+        Gera("null", "CHPR", temp.endereco, "1");
+    }
+  }
+  {flag_param = 0;}
+}
+
+void ExpList() : 
+{
+}
+{ 
+  Logical_OR()
+  {
+    if(flag_writelong == 1)
+      Gera("null", "IMPR", "null", "null");
+  } 
+  ("," Logical_OR() 
+  {
+    if(flag_writelong == 1)
+      Gera("null", "IMPR", "null", "null");
+  } 
+  )*
+  { flag_writelong = 0; }
+}
+
+
+void Assignment() : 
+{
+  Token t;
+}
+{ 
+  t = Designator() "=" Logical_OR() ";" 
+  { 
+    temp = Busca(String.valueOf(t.image));
+    Gera("null", "ARMZ", String.valueOf(temp.nivel), String.valueOf(temp.endereco)); 
+  }
+}
+
+//Expressões
+void Logical_OR() : {} { Logical_AND() ("||" Logical_AND())* }
+void Logical_AND() : {} { Expression() ("&&" Expression())* }
+
+void Expression() : 
+{
+  int flag = -1;
+}
+{
+  EqualityExpr() 
+  [("==" {flag = 0;}| "!=" {flag = 1;})  EqualityExpr()
+  {
+    if(flag == 0)
+      Gera("null", "CMIG", "null", "null");
+    if(flag == 1)
+      Gera("null", "CMDG", "null", "null");
+  }
+  ] 
+}
+
+void EqualityExpr() : 
+{
+  int flag = -1;
+}
+{ 
+  SimpleExpr() 
+  [("<" {flag = 0;} | "<=" {flag = 1;} | ">" {flag = 2;} | ">=" {flag = 3;}) SimpleExpr()
+  {
+    if(flag == 0)
+      Gera("null", "CMME", "null", "null");
+    if(flag == 1)
+      Gera("null", "CMEG", "null", "null");
+    if(flag == 2)
+      Gera("null", "CMMA", "null", "null");
+    if(flag == 3)
+      Gera("null", "CMAG", "null", "null");
+  }
+  ]
+}
+
+
+void SimpleExpr() : 
+{
+  int flag = -1;
+} 
+{ 
+  ["+" | "-" {flag_menos = 1;} ] Term() 
+  (("+" {flag = 0;} | "-" {flag = 1;}) Term()
+  {
+    if(flag == 0)
+      Gera("null", "SOMA", "null", "null");
+    if(flag == 1)
+      Gera("null", "SUBT", "null", "null");
+  }
+  )*
+}
+
+
+void Term() : 
+{
+  int flag = -1;
+}
+{
+  Unary() (("*" {flag = 0;} | "/" {flag = 1;} | "%" {flag = 2;}) Unary()
+  {
+    if(flag == 0)
+      Gera("null", "MULT", "null", "null");
+    if(flag == 1)
+      Gera("null", "DIVI", "null", "null");
+    if(flag == 2)
+      Gera("null", "REST", "null", "null");
+  }
+  )*
+}
+void Unary() : {} { "!" Unary() | Factor() }
+
+void Factor() :
+{
+  Token t;
+}
+{
+  t = Designator()
+  {
+    temp = Busca(String.valueOf(t.image));
+    if((temp.categoria).equals("variavel")){
+      if(flag_readlong == 0)
+        Gera("null", "CRVL", String.valueOf(temp.nivel), String.valueOf(temp.endereco));
+      else
+        Gera("null", "ARMZ", String.valueOf(temp.nivel), String.valueOf(temp.endereco));
+      flag_readlong = 0;
+      flag_readlong = 0;
+    }
+    if((temp.categoria).equals("constante")){
+      if((temp.nome).equals("true"))
+        Gera("null", "CRCT", String.valueOf(1), "null");
+      else
+        Gera("null", "CRCT", String.valueOf(0), "null");
+    }
+    if((temp.categoria).equals("parametro")){
+      Gera("null", "CRVL", String.valueOf(temp.nivel), String.valueOf(temp.endereco));
+    }
+  }
+  | t = <NUMBER>
+  {
+    if(flag_menos == 1)
+      Gera("null", "CRCT", "-"+String.valueOf(t.image), "null");
+    else
+      Gera("null", "CRCT", String.valueOf(t.image), "null");
+    flag_menos = 0;
+  }
+  | "(" Logical_OR() ")"
+}
+
+Token Designator() :
+{
+  Token t;
+}
+{ 
+  t = <IDENT> {return t;}
+}
+
+void Gera(String rotulo, String codigo, String par1, String par2) :
+{
+}
+{
+  {
+  if(rotulo == "null"){
+    if(par1 == "null" && par2 == "null")
+      System.out.println("      " + codigo);
+    else if(par2 == "null")
+      System.out.println("      " + codigo + " " + par1);
+    else
+      System.out.println("      " + codigo + " " + par1 + "," + par2);
+  } else {
+    if(par1 == "null" && par2 == "null")
+      System.out.println("" + rotulo + ":   " + codigo);
+    else if(par2 == "null")
+      System.out.println("" + rotulo + ":   " + codigo + " " + par1);
+    else
+      System.out.println("" + rotulo + ":   " + codigo + " " + par1 + "," + par2);
+  }
+  
+  }
+}
+
+Dados Busca(String NomeProcurado) :
+{
+  Enumeration t = TabelaSimb.keys();
+  int temp;
+  Dados temp2;
+}
+{
+  {
+    
+  while (t.hasMoreElements() == true) {
+    temp = (int)t.nextElement();
+    temp2 = (Dados)TabelaSimb.get(temp);
+
+    if((temp2.nome).equals(NomeProcurado))
+      return temp2;
+  }
+
+  return null;
+
+  }
+}
+
+int BuscaN(int NivelProcurado, String CategoriaProcurada) :
+{
+  Enumeration t = TabelaSimb.keys();
+  int temp, cont = 0;
+  Dados temp2;
+}
+{
+  {
+    
+  while (t.hasMoreElements() == true) {
+    temp = (int)t.nextElement();
+    temp2 = (Dados)TabelaSimb.get(temp);
+
+    if(temp2.nivel == NivelProcurado && (temp2.categoria).equals(CategoriaProcurada))
+      cont++;
+  }
+
+  return cont;
+
+  }
+}
+
+void Retira(int NivelProcurado, String CategoriaProcurada) :
+{
+  Enumeration t = TabelaSimb.keys();
+  int temp, cont = 0;
+  Dados temp2;
+}
+{
+  {
+    
+  while (t.hasMoreElements() == true) {
+    temp = (int)t.nextElement();
+    temp2 = (Dados)TabelaSimb.get(temp);
+
+    if(temp2.nivel == NivelProcurado && (temp2.categoria).equals(CategoriaProcurada))
+      TabelaSimb.remove(temp);
+  }
+  }
+}
+
+void Imprime() :
+{
+  Enumeration t = TabelaSimb.keys();
+  int temp;
+  Dados temp2;
+}
+{
+  {
+    
+  while (t.hasMoreElements() == true) {
+    temp = (int)t.nextElement();
+    //System.out.println("temp: " + temp);
+    temp2 = (Dados)TabelaSimb.get(temp);
+    System.out.println(temp);
+    System.out.println(" nome = " + temp2.nome);
+    System.out.println(" nivel = " + temp2.nivel);
+    System.out.println(" categoria = " + temp2.categoria);
+    System.out.println(" endereco = " + temp2.endereco);
+    System.out.println(" parametros = " + temp2.parametros);
+  }
+
+  }
+}
+

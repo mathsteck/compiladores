@@ -1,0 +1,63 @@
+      INPP
+      AMEM 2
+      AMEM 1
+      DSVS L1
+L2:   ENPR 1
+      AMEM 1
+L3:   NADA
+      CRVL 1,-5
+      CRCT 0
+      CMDG
+      DSVF L4
+      CRVL 1,-6
+      ARMZ 1,0
+      CRVL 1,-5
+      ARMZ 1,-6
+      CRVL 1,0
+      CRVL 1,-5
+      REST
+      ARMZ 1,-5
+      CRVL 1,0
+      IMPR
+      CRVL 1,-6
+      IMPR
+      CRVL 1,-5
+      IMPR
+      IMPR
+      DSVS L3
+L4:   NADA
+      CRVL 1,-6
+      ARMZ 0,2
+      DMEM 1
+      RTPR 2
+L1:   NADA
+      CRCT 25733
+      ARMZ 1,-6
+      CRCT 48611
+      ARMZ 1,-5
+      CRVL 1,-6
+      CRVL 1,-5
+      CHPR L2,0
+      CRVL 0,2
+      IMPR
+      IMPR
+      IMPR
+      CRCT 7485671
+      ARMZ 1,-6
+      CRCT 7480189
+      ARMZ 1,-5
+      CRVL 1,-6
+      CRVL 1,-5
+      CHPR L2,0
+      CRVL 0,2
+      IMPR
+      IMPR
+      CRCT 10
+      CRCT 5
+      CHPR L2,0
+      CRVL 0,2
+      IMPR
+      IMPR
+      DMEM 3
+      PARA
+      FIM

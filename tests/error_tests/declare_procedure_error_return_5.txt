@@ -1,0 +1,2 @@
+procedure foo(integer n )
+	return 2+2

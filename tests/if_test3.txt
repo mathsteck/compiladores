@@ -1,0 +1,6 @@
+if a then
+	x = 1
+	y = 5
+	if b then
+		z = 8
+		w = 10

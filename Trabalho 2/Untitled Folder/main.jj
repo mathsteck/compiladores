@@ -1,0 +1,365 @@
+PARSER_BEGIN (TrabalhoLexico)
+    public class TrabalhoLexico{
+        public static void main(String[] args){
+            try{
+                new TrabalhoLexico(new java.io.FileInputStream(args[0])).Start();
+            } catch (java.io.FileNotFoundException ex) {
+                System.out.println("Arquivo " + args[0] + " nao foi encontrado");
+                System.exit(-1);
+            }catch (ParseException ex) {
+                System.out.println(ex.getMessage());
+                System.exit(-1);
+            } catch (TokenMgrError ex) {
+                System.out.println(ex.getMessage());
+                System.exit(-1);
+            }
+        }
+    }
+PARSER_END (TrabalhoLexico)
+
+/*Eliminando comentarios e espacos*/
+SKIP: {" "|"\r"}
+SKIP: { <BLOCKCOMMENT: "/*"(~["*"])* "*"(~["/"] (~["*"])* "*")* "/" > }
+SKIP: { <LINECOMMENT: "--" (~["\n"])* ("\n"|"\r"|"\r\n")>}
+
+/* Palavras reservadas*/
+TOKEN: { <ELSE: "else"> }
+TOKEN: { <ELSEDEF: "elsedef"> }
+TOKEN: { <IF: "if"> }
+TOKEN: { <IFDEF: "ifdef"> }
+TOKEN: { <ELSIF: "elsif"> }
+TOKEN: { <ELSIFDEF: "elsifdef"> }
+TOKEN: { <WHILE: "while"> }
+TOKEN: { <BREAK: "break"> }
+TOKEN: { <RETURN: "return"> }
+TOKEN: { <FOR: "for"> }
+TOKEN: { <FUNCTION: "function"> }
+TOKEN: { <TYPE: "type"> }
+TOKEN: { <PROCEDURE: "procedure"> }
+TOKEN: { <GLOBAL: "global"> }
+TOKEN: { <PUBLIC: "public"> }
+TOKEN: { <EXPORT: "export"> }
+TOKEN: { <OVERRIDE: "override"> }
+TOKEN: { <ATOM: "atom"> }
+TOKEN: { <INTEGER: "integer"> }
+TOKEN: { <SEQUENCE: "sequence"> }
+TOKEN: { <OBJECT: "object"> }
+TOKEN: { <NAMESPACE: "namespace"> }
+TOKEN: { <CONSTANT: "constant"> }
+TOKEN: { <ENUM: "enum"> }
+TOKEN: { <BY: "by"> }
+TOKEN: { <SWITCH: "switch"> }
+TOKEN: { <DO: "do">}
+TOKEN: { <THEN: "then">}
+TOKEN: { <CASE: "case"> }
+TOKEN: { <CONTINUE: "continue"> }
+TOKEN: { <RETRY: "retry"> }
+TOKEN: { <EXIT: "exit"> }
+TOKEN: { <TO: "to">}
+TOKEN: { <WITH: "with"> }
+TOKEN: { <WITHOUT: "without"> }
+TOKEN: { <PROFILE: "profile"> }
+TOKEN: { <PROFILE_TIME: "profile_time"> }
+TOKEN: { <TRACE: "trace"> }
+TOKEN: { <BATCH: "batch"> }
+TOKEN: { <TYPE_CHECK: "type_check"> }
+TOKEN: { <INDIRECT_INCLUDES: "indirect_includes"> }
+TOKEN: { <INLINE: "inline"> }
+TOKEN: { <WARNING: "warning"> }
+TOKEN: { <SAVE: "save"> }
+TOKEN: { <RESTORE: "restore"> }
+TOKEN: { <STRICT: "strict"> }
+TOKEN: { <FALLTHRU: "fallthru"> }
+TOKEN: { <ENTRY: "entry"> }
+TOKEN: { <LOOP: "loop"> }
+TOKEN: { <GOTO: "goto"> }
+TOKEN: { <NOT: "not"> }
+TOKEN: { <AND: "and"> }
+TOKEN: { <OR: "or"> }
+TOKEN: { <XOR: "xor"> }
+TOKEN: { <INCLUDE: "includfe"> }
+TOKEN: { <AS: "as"> }
+TOKEN: { <LABEL: "label"> }
+
+/* Simbolos */
+TOKEN: { <COMMA: ","> }
+TOKEN: { <SEMICOLON: ";"> }
+TOKEN: { <LPAREN: "("> }
+TOKEN: { <RPAREN: ")"> }
+TOKEN: { <LCHAVE: "{"> }
+TOKEN: { <RCHAVE: "}"> }
+TOKEN: { <LCOLCH: "["> }
+TOKEN: { <RCOLCH: "]"> }
+TOKEN: { <NEWLINE: "\n"> }
+TOKEN: { <INDENT: "\t"> }
+
+/* Operações */
+TOKEN: { <MUL_OP: "*" | "/" | "%"> }
+TOKEN: { <ADD_OP: "+" | "-"> }
+TOKEN: { <ASSIGN_OP: "+=" | "-=" | "*=" | "/=" | "&=" >}
+TOKEN: { <REL_OP: ">" | ">=" | "<" | "<=" | "!="> }
+TOKEN: { <EQUAL_SIGN: "=">}
+
+/* Identificadores */
+TOKEN: { <#ALPHA: ["a"-"z"] | ["A"-"Z"]> }
+TOKEN: { <#DIGIT: ["0"-"9"]> }
+TOKEN: { <USCORE: "_"> }
+TOKEN: { <CHAR: [" "-"~"]> }
+TOKEN: { <ESCCHAR: ["\0"-"\r"]> }
+TOKEN: { <NUMBER: (<DIGIT>)+("."(<DIGIT>)*)? | "."(<DIGIT>)+>}
+TOKEN: { <STRING: "\""(<CHAR>)* "\""> }
+TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGIT> | <USCORE>)* > }
+TOKEN: { <ATOMINTEGER: (<DIGIT>)+("."(<DIGIT>)*)?> }
+TOKEN: { <ATOMREAL: (<DIGIT>)+"."(<DIGIT>)+> }
+//TOKEN: { <INTEGER: (<DIGIT>)+> }
+
+/* Início */
+void Start() : {} { Read() | <EOF> }
+
+void Read() throws TokenMgrError, ParseException:
+{
+    Token t;
+}
+
+{
+    t=<ELSE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tELSE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ELSEDEF> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tELSEDEF\t\t - "+t.toString());}
+    Start()
+    |
+    t=<IF> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tIF\t\t - "+t.toString());}
+    Start()
+    |
+    t=<IFDEF> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tIFDEF\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ELSIF> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tELSIF\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ELSIFDEF> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tELSIFDEF\t\t - "+t.toString());}
+    Start()
+    |
+    t=<WHILE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tWHILE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<BREAK> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tBREAK\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RETURN> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRETURN\t\t - "+t.toString());}
+    Start()
+    |
+    t=<FOR> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tFOR\t\t - "+t.toString());}
+    Start()
+    |
+    t=<FUNCTION> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tFUNCTION\t\t - "+t.toString());}
+    Start()
+    |
+    t=<TYPE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tTYPE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<PROCEDURE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tPROCEDURE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<GLOBAL> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tGLOBAL\t\t - "+t.toString());}
+    Start()
+    |
+    t=<PUBLIC> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tPUBLIC\t\t - "+t.toString());}
+    Start()
+    |
+    t=<EXPORT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tEXPORT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<OVERRIDE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tOVERRIDE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ATOM> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tATOM\t\t - "+t.toString());}
+    Start()
+    |
+    t=<INTEGER> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tINTEGER\t\t - "+t.toString());}
+    Start()
+    |
+    t=<SEQUENCE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSEQUENCE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<OBJECT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tOBJECT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<NAMESPACE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tNAMESPACE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<CONSTANT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tCONSTANT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ENUM> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tENUM\t\t - "+t.toString());}
+    Start()
+    |
+    t=<BY> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tBY\t\t - "+t.toString());}
+    Start()
+    |
+    t=<SWITCH> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSWITCH\t\t - "+t.toString());}
+    Start()
+    |
+    t=<DO> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tDO\t\t - "+t.toString());}
+    Start()
+    |
+    t=<THEN> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tTHEN\t\t - "+t.toString());}
+    Start()
+    |
+    t=<CASE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tCASE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<CONTINUE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tCONTINUE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RETRY> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRETRY\t\t - "+t.toString());}
+    Start()
+    |
+    t=<EXIT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tEXIT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<TO> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tTO\t\t - "+t.toString());}
+    Start()
+    |
+    t=<WITH> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tWITH\t\t - "+t.toString());}
+    Start()
+    |
+    t=<WITHOUT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tWITHOUT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<PROFILE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tPROFILE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<PROFILE_TIME> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tPROFILE_TIME\t\t - "+t.toString());}
+    Start()
+    |
+    t=<TRACE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tTRACE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<BATCH> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tBATCH\t\t - "+t.toString());}
+    Start()
+    |
+    t=<TYPE_CHECK> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tTYPE_CHECK\t\t - "+t.toString());}
+    Start()
+    |
+    t=<INDIRECT_INCLUDES> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tINDIRECT_INCLUDES\t\t - "+t.toString());}
+    Start()
+    |
+    t=<INLINE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tINLINE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<WARNING> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tWARNING\t\t - "+t.toString());}
+    Start()
+    |
+    t=<SAVE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSAVE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RESTORE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRESTORE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<STRICT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSTRICT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<FALLTHRU> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tFALLTHRU\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ENTRY> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tENTRY\t\t - "+t.toString());}
+    Start()
+    |
+    t=<LOOP> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tLOOP\t\t - "+t.toString());}
+    Start()
+    |
+    t=<GOTO> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tGOTO\t\t - "+t.toString());}
+    Start()
+    |
+    t=<NOT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tNOT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<AND> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tAND\t\t - "+t.toString());}
+    Start()
+    |
+    t=<OR> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tOR\t\t - "+t.toString());}
+    Start()
+    |
+    t=<XOR> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tXOR\t\t - "+t.toString());}
+    Start()
+    |
+    t=<INCLUDE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tINCLUDE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<AS> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tAS\t\t - "+t.toString());}
+    Start()
+    |
+    t=<LABEL> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tLABEL\t\t - "+t.toString());}
+    Start()
+    |
+    t=<COMMA> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tCOMMA\t\t - "+t.toString());}
+    Start()
+    |
+    t=<SEMICOLON> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSEMICOLON\t\t - "+t.toString());}
+    Start()
+    |
+    t=<LPAREN> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tLPAREN\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RPAREN> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRPAREN\t\t - "+t.toString());}
+    Start()
+    |
+    t=<LCHAVE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tLCHAVE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RCHAVE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRCHAVE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<LCOLCH> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tLCOLCH\t\t - "+t.toString());}
+    Start()
+    |
+    t=<RCOLCH> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tRCOLCH\t\t - "+t.toString());}
+    Start()
+    |
+    t=<NEWLINE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tNEWLINE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<INDENT> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tINDENT\t\t - "+t.toString());}
+    Start()
+    |
+    t=<MUL_OP> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tMUL_OP\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ADD_OP> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tADD_OP\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ASSIGN_OP> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tASSIGN_OP\t\t - "+t.toString());}
+    Start()
+    |
+    t=<REL_OP> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tREL_OP\t\t - "+t.toString());}
+    Start()
+    |
+    t=<EQUAL_SIGN> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tEQUAL_SIGN\t\t - "+t.toString());}
+    Start()
+    |
+    t=<USCORE> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tUSCORE\t\t - "+t.toString());}
+    Start()
+    |
+    t=<CHAR> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tCHAR\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ESCCHAR> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tESCCHAR\t\t - "+t.toString());}
+    Start()
+    |
+    t=<NUMBER> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tNUMBER\t\t - "+t.toString());}
+    Start()
+    |
+    t=<IDENTIFIER> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tIDENTIFIER\t\t - "+t.toString());}
+    Start()
+    |
+    t=<STRING> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tSTRING\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ATOMINTEGER> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tATOMINTEGER\t\t - "+t.toString());}
+    Start()
+    |
+    t=<ATOMREAL> {System.out.println("@("+t.beginLine+","+t.beginColumn+")\tATOMREAL\t\t - "+t.toString());}
+    Start()
+}
+

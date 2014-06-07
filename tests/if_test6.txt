@@ -1,0 +1,6 @@
+if a < b then
+	x = 1
+	y = 5
+else
+z = 8
+w = 10

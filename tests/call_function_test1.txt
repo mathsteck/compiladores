@@ -1,0 +1,9 @@
+function foo()
+
+function foo(n)
+
+function foo(10)
+
+function foo(10, x)
+
+function foo({1, 2, 3})

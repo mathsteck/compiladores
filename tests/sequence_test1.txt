@@ -1,0 +1,7 @@
+sequence number_list = {1, 2, 3}
+sequence number_list = -{1, 2, 3} --sim, pode com menos
+sequence number_list = {1, 2, “HAHA!”}
+sequence number_list = {1, 2, {{3, 10, 11}, 3, 4, 5}}
+sequence number_list = {1}
+sequence number_list = {x[3]}
+sequence number_list = {}

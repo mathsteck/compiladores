@@ -1,0 +1,2 @@
+while sequence(Line) with entry do
+	proc(Line)

@@ -1,0 +1,6 @@
+ifdef SOME_WORD then
+	b = a + b
+elsifdef SOME_OTHER_WORD then
+	--... zero or more statements
+elsedef
+	--... zero or more statements

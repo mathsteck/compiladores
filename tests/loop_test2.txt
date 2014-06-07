@@ -1,0 +1,8 @@
+loop label "GONEXT" do
+	a = a * 2
+	y += 1
+
+	if y = 7 then
+		continue "GONEXT"
+	x = x - 1
+	until x<=0

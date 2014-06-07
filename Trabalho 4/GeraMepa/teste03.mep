@@ -1,0 +1,14 @@
+      INPP
+      AMEM 1
+      DSVS L1
+L2:   ENPR 1
+      CRCT 10
+      ARMZ 0,0
+      RTPR 0
+L1:   NADA
+      CHPR L2,0
+      CRVL 0,0
+      IMPR
+      DMEM 1
+      PARA
+      FIM

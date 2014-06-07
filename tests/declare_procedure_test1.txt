@@ -1,0 +1,14 @@
+procedure foo()
+	? 2+2
+
+procedure foo(integer n )
+	? 2+2
+
+procedure foo(integer n=1)
+	? 2+2
+
+procedure foo(sequence s)
+	? 2 + 2
+
+procedure foo(integer n, sequence s)
+	? 2 + 2

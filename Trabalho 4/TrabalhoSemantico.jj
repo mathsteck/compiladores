@@ -1,0 +1,289 @@
+PARSER_BEGIN (TrabalhoSemantico)
+
+import java.util.*;
+
+public class TrabalhoSemantico{
+
+static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
+static Integer indexTabela = 0;
+static String categoriaLocal;
+static Integer nivelCorrente = 0;
+static Dado dado = new Dado();
+static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
+static Token valor = null;
+
+    public static void main(String[] args){
+        try{
+            new TrabalhoSemantico(new java.io.FileInputStream(args[0])).Start();
+            System.out.println("SUCESSO");
+            imprimeTabela();
+        } catch (java.io.FileNotFoundException ex) {
+            System.out.println("Arquivo " + args[0] + " nao foi encontrado");
+        } catch (ParseException ex) {
+            System.out.println(ex.getMessage());
+        } catch (TokenMgrError ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+}
+PARSER_END (TrabalhoSemantico)
+
+/* Eliminando comentarios e espacos */
+SKIP: {" "|"\r"|"\n"|"\t"}
+SKIP: {"/*" : BLOCKCOMMENT}
+<BLOCKCOMMENT> SKIP:{"*/" : DEFAULT}
+<BLOCKCOMMENT> MORE:{<~[]>}
+SKIP: { <LINECOMMENT: "--" (~["\n"])* ("\n"|"\r"|"\r\n")>}
+
+/* Palavras reservadas*/
+TOKEN: { <ELSE: "else"> }
+TOKEN: { <IF: "if"> }
+TOKEN: { <ELSIF: "elsif"> }
+TOKEN: { <WHILE: "while"> }
+TOKEN: { <BREAK: "break"> }
+TOKEN: { <RETURN: "return"> }
+TOKEN: { <FOR: "for"> }
+TOKEN: { <FOREACH: "foreach"> }
+TOKEN: { <FUNCTION: "function"> }
+TOKEN: { <TYPE: "type"> }
+TOKEN: { <PROCEDURE: "procedure"> }
+TOKEN: { <GLOBAL: "global"> }
+TOKEN: { <PUBLIC: "public"> }
+TOKEN: { <EXPORT: "export"> }
+TOKEN: { <OVERRIDE: "override"> }
+TOKEN: { <CONSTANT: "constant"> }
+TOKEN: { <ENUM: "enum"> }
+TOKEN: { <BY: "by"> }
+TOKEN: { <SWITCH: "switch"> }
+TOKEN: { <DO: "do">}
+TOKEN: { <THEN: "then">}
+TOKEN: { <CASE: "case"> }
+TOKEN: { <CONTINUE: "continue"> }
+TOKEN: { <RETRY: "retry"> }
+TOKEN: { <EXIT: "exit"> }
+TOKEN: { <TO: "to">}
+TOKEN: { <PROFILE: "profile"> }
+TOKEN: { <PROFILE_TIME: "profile_time"> }
+TOKEN: { <TRACE: "trace"> }
+TOKEN: { <BATCH: "batch"> }
+TOKEN: { <TYPE_CHECK: "type_check"> }
+TOKEN: { <INLINE: "inline"> }
+TOKEN: { <WARNING: "warning"> }
+TOKEN: { <SAVE: "save"> }
+TOKEN: { <RESTORE: "restore"> }
+TOKEN: { <STRICT: "strict"> }
+TOKEN: { <LOOP: "loop"> }
+TOKEN: { <GOTO: "goto"> }
+TOKEN: { <NOT: "not"> }
+TOKEN: { <AND: "and"> }
+TOKEN: { <OR: "or"> }
+TOKEN: { <XOR: "xor"> }
+TOKEN: { <AS: "as"> }
+TOKEN: { <LABEL: "label"> }
+TOKEN: { <UNTIL: "until"> }
+TOKEN: { <DOLAR: "$"> }
+TOKEN: { <END: "end"> }
+
+/* Identificadores */
+TOKEN: { <#ALPHA: ["a"-"z"] | ["A"-"Z"]> }
+TOKEN: { <#DIGITDEC: ["0"-"9"]> }
+TOKEN: { <#DIGITHEX: ["0"-"9"] | ["A"-"F"]> }
+TOKEN: { <#DIGITOCT: ["0"-"7"]> }
+TOKEN: { <#DIGITBIN: ["0"-"1"]> }
+TOKEN: { <#USCORE: "_"> }
+TOKEN: { <SYMBOL: ["!"] | ["#"] | ["%"] | [":"-";"] | ["@"] | ["^"] | ["`"] | ["|"] | ["~"]> }
+TOKEN: { <#CHAR: ( <SYMBOL> | <ALPHA> | <DIGITDEC>  ) > }
+TOKEN: { <#ESCCHAR: ["\0"-"\b"] | ["\f"-"\r"]> }
+TOKEN: { <STRING: (("\""( "\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"" | "\'"( "\\n" | <CHAR>  | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'" |
+"\"\"\"" ("\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\"")) | ("b\""(<DIGITBIN> | " " | <USCORE>)+ "\"") | ("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") > }
+TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" > }
+TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
+TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }     
+TOKEN: { <ATOMBINARY: "0b"(<DIGITBIN>)+> }
+TOKEN: { <ATOMOCTAL: "0t"(<DIGITBIN>)+> }
+TOKEN: { <ATOMDECIMAL: "0d"(<DIGITBIN>)+> }
+TOKEN: { <ATOMHEXADECIMAL: "0x"(<DIGITBIN>)+> }
+TOKEN: { <BIN: <DIGITBIN> > }
+
+/* Programa */
+void Start() : {} { Stmtblk() <EOF> }
+void Stmtblk() : {} { Statement() (Statement())* }
+void Block() : {} { Statementblock() (Statementblock())* }
+void Statement() : {} { Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt() | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Look() }
+void Statementblock() : {} { Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt() | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Lookblock() }
+void Look() : {} { "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Scopedeclare() | LOOKAHEAD(2) Assignmono() | Assignmulti() }
+void Lookblock() : {} { "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Scopeblock() | LOOKAHEAD(2) Assignmono() | Assignmulti() }
+void Scopeblock() : {} { (Scopemodifier())? ( Vardeclare() | Constdeclare() | Enumdeclare() ) }
+void Breakstmt() : {} { <BREAK> (Stringlit() | Atomexpr())? }
+void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
+void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
+void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
+void Stringlit() : {} { <STRING> }
+void Forstmt() : {} { <FOR> Foridx() (Labelstmt())? <DO> (Block())? <END> <FOR> }
+void Foridx() : {} { <IDENTIFIER> "=" Expression() <TO> Expression() ( <BY> Expression())? }
+void Foreachstmt() : {} { <FOREACH> (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO> (Block())? <END> <FOREACH> }
+void Labelstmt() : {} { <LABEL> Stringlit() }
+void Whilestmt() : {} { <WHILE> Expression() (Labelstmt())? <DO> (Block())? <END> <WHILE> }
+void Loopstmt() : {} { <LOOP> (Labelstmt())? <DO> Block() <UNTIL> Expression() <END> <LOOP>  }
+void Gotostmt() : {} { <GOTO> Labelstmt() }
+void Ifstmt() : {} { Iftest() (LOOKAHEAD(2) Elsif())* ( Else())? <END> <IF>}
+void Iftest() : {} { <IF> Expression() (Labelstmt())? <THEN> (Block())?  }
+void Elsif() : {} { <ELSIF> Expression() <THEN> ( Block())? }
+void Else() : {} { <ELSE> (Block())? }
+void Switchstmt() : {} { Switchtest() (Case())+ (Caseelse())? <END> <SWITCH> }
+void Switchtest() : {} { <SWITCH> Expression() (Labelstmt())? <DO> }
+void Case() : {} { <CASE> Caselist() <THEN> (Block())?}
+void Caselist() : {} { Expression() ("," Expression())* }
+void Caseelse() : {} { <ELSE> ( Block())?}
+void Assignmono() : {} { Varexp() "=" Expression()}
+void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
+void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
+void Return() : {} { <RETURN> Expression() }
+void Vardeclare() : {} { <IDENTIFIER> Identlist() }
+void Scopemodifier() : {} { <GLOBAL> | <PUBLIC> | <EXPORT> | <OVERRIDE> }
+
+void Identlist() : {}{ Ident() ("," Ident())* }
+
+void Ident() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER>
+    ("=" Expression()
+    {
+        System.out.println("Opcional");
+    })?
+    {
+        Dado tmp = new Dado();
+        tmp.setIdentificador(t.toString());
+        tmp.setNivel(nivelCorrente);
+        if(valor != null) {
+            tmp.setValor(valor.toString());
+            valor = null;
+        }
+
+        insereTabela(tmp);
+    }
+}
+
+void Constdeclare() :
+{
+    Token t;
+}
+{
+    t = <CONSTANT> Identlist()
+    {
+        atualizaCategoria(t.toString());
+    }
+}
+
+void Enumdeclare() : {} { <ENUM> (Enumval() | Enumtype()) }
+void Enumval() : {} { (<BY> Enumdelta())? Identlist() }
+void Enumdelta() : {} { ("+" | "-" | "*" | "/")? Expression() }
+void Enumtype() : {} { <TYPE> (<BY> Enumdelta())? Identlist() <END> <TYPE>}
+void Scopedeclare() : {} { (Scopemodifier())? ( Procdeclare() | Funcdeclare() | Typedeclare() | Vardeclare() | Constdeclare() | Enumdeclare() ) }
+void Procdeclare() : {} { <PROCEDURE> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <PROCEDURE> }
+void Paramlist() : {} { (Parameter() ("," Parameter())* ) }
+void Parameter() : {} { <IDENTIFIER> <IDENTIFIER>}
+void Funcdeclare() : {} { <FUNCTION> <IDENTIFIER> "(" (Paramlist())? ")" (Block())? <END> <FUNCTION> }
+void Typedeclare() : {} { <TYPE> <IDENTIFIER> "(" Parameter() ")" (Block())? <END> <TYPE>}
+void Expression() : {} { Seqexpr()| Binexpr() }
+void Binexpr() : {} { Relexpr() (Binop() Relexpr())* }
+void Binop() : {} { <AND> | <OR> | <XOR> }
+void Relexpr() : {} { Concatexpr() (Relop() Concatexpr())* }
+void Relop() : {} { "<" | ">" | "<=" | ">=" |"="| "!=" }
+void Concatexpr() : {} { Sumsubexpr() (Concat() Sumsubexpr())* }
+void Concat() : {} { "&" }
+void Sumsubexpr() : {} { Multidivexpr() (Sumsub() Multidivexpr())*  }
+void Sumsub() : {} { "+" | "-" }
+void Multidivexpr() : {} { Unaryexpr() (Multidiv() Unaryexpr())* }
+void Multidiv() : {} { "*" | "/" }
+void Unaryexpr(): {} { Lastexpr() (LOOKAHEAD(2) Unaryop() Lastexpr())? }
+void Unaryop() : {} { <NOT> | "-" | "+" }
+void Lastexpr() : {} { Atomexpr() | Stringlit() | <BIN> | "("Expression()")" | <IDENTIFIER> (Variable() | Callf())? }
+void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
+void Varexp() : {} { <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )? }
+void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
+void Seqexpr() : {} { "{" ( <DOLAR> | Objexpr() (LOOKAHEAD(2) "," Objexpr())* ("," <DOLAR>)? )? "}" }
+void Call() : {} { <IDENTIFIER> "(" (Arglist())? ")"}
+void Callf() : {} { "(" (Arglist())? ")"}
+void Arglist() : {} { Expression() ("," Expression())* }
+void Objexpr() : {} { Atomexpr() | Seqexpr() | <STRING> }
+void Atomexpr() :
+{
+}
+{
+    valor = <ATOMINTEGER> | <ATOMREAL> | <ATOMBINARY> | <ATOMOCTAL> | <ATOMDECIMAL> | <ATOMHEXADECIMAL>
+}
+
+
+/* Funcoes Auxiliares */
+boolean naoDeclarado(String IdProcurado, Integer NivelProcurado) :
+{
+    Enumeration t = TabelaSimb.keys();
+    Integer chave;
+    Dado dado;
+}
+{
+    {
+        while (t.hasMoreElements()) {
+            chave = (Integer)t.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            if(dado.getIdentificador().equals(IdProcurado) && dado.getNivel() == NivelProcurado){
+                System.out.println("Identificador já declarado no nível atual");
+                return false;/* ja existe na tabela*/
+            }
+        }
+        /* pode ser adicionado futuramente na tabela */
+        return true;
+    }
+}
+
+void insereTabela(Dado dado) :
+{
+}
+{
+    {
+        if(naoDeclarado(dado.getIdentificador(), dado.getNivel())){
+            TabelaSimb.put(indexTabela, dado);
+            listaChaves.add(indexTabela);
+            indexTabela++;
+        }
+    }
+}
+
+void imprimeTabela() :
+{
+    Integer chave;
+    Enumeration elemento = TabelaSimb.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements())
+        {
+            chave = (Integer) elemento.nextElement();
+            dado = TabelaSimb.get(chave);
+
+            System.out.println(chave + ") " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getIdentificador() + " " + dado.getValor());
+        }
+    }
+}
+
+void atualizaCategoria(String Categoria) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = TabelaSimb.get(chave);
+            dado.setCategoria(Categoria);
+        }
+
+        listaChaves.clear();
+    }
+}

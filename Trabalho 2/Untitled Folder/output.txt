@@ -1,0 +1,75 @@
+Java Compiler Compiler Version 5.0 (Parser Generator)
+(type "javacc" with no arguments for help)
+Reading from file main.jj . . .
+File "TokenMgrError.java" is being rebuilt.
+File "ParseException.java" is being rebuilt.
+File "Token.java" is being rebuilt.
+File "SimpleCharStream.java" is being rebuilt.
+Parser generated successfully.
+@(1,1)	GLOBAL		 - global
+@(1,8)	FUNCTION		 - function
+@(1,17)	IDENTIFIER		 - delete_item
+@(1,28)	LPAREN		 - (
+@(1,30)	OBJECT		 - object
+@(1,37)	IDENTIFIER		 - old
+@(1,40)	COMMA		 - ,
+@(1,42)	SEQUENCE		 - sequence
+@(1,51)	IDENTIFIER		 - group
+@(1,57)	RPAREN		 - )
+@(1,58)	NEWLINE		 - 
+
+@(2,8)	INDENT		 - 	
+@(2,9)	INTEGER		 - integer
+@(2,17)	IDENTIFIER		 - pos
+@(2,20)	NEWLINE		 - 
+
+@(3,8)	INDENT		 - 	
+@(4,8)	INDENT		 - 	
+@(4,9)	IDENTIFIER		 - pos
+@(4,13)	EQUAL_SIGN		 - =
+@(4,15)	IDENTIFIER		 - find
+@(4,19)	LPAREN		 - (
+@(4,21)	IDENTIFIER		 - old
+@(4,24)	COMMA		 - ,
+@(4,26)	IDENTIFIER		 - group
+@(4,32)	RPAREN		 - )
+@(4,33)	NEWLINE		 - 
+
+@(5,8)	INDENT		 - 	
+@(5,9)	IF		 - if
+@(5,12)	IDENTIFIER		 - pos
+@(5,16)	REL_OP		 - >
+@(5,18)	CHAR		 - 0
+@(5,20)	THEN		 - then
+@(5,24)	NEWLINE		 - 
+
+@(6,8)	INDENT		 - 	
+@(6,16)	INDENT		 - 	
+@(6,17)	IDENTIFIER		 - group
+@(6,23)	EQUAL_SIGN		 - =
+@(6,25)	IDENTIFIER		 - group
+@(6,30)	LCOLCH		 - [
+@(6,31)	CHAR		 - 1
+@(6,33)	CHAR		 - .
+@(6,34)	CHAR		 - .
+@(6,36)	IDENTIFIER		 - pos
+@(6,39)	ADD_OP		 - -
+@(6,40)	CHAR		 - 1
+@(6,41)	RCOLCH		 - ]
+@(6,43)	CHAR		 - &
+@(6,45)	IDENTIFIER		 - group
+@(6,50)	LCOLCH		 - [
+@(6,51)	IDENTIFIER		 - pos
+@(6,54)	ADD_OP		 - +
+@(6,55)	CHAR		 - 1
+@(6,57)	CHAR		 - .
+@(6,58)	CHAR		 - .
+@(6,60)	CHAR		 - $
+@(6,61)	RCOLCH		 - ]
+@(6,62)	NEWLINE		 - 
+
+@(7,8)	INDENT		 - 	
+@(7,9)	RETURN		 - return
+@(7,16)	IDENTIFIER		 - group
+@(7,21)	NEWLINE		 - 
+

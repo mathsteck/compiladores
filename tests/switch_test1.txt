@@ -1,0 +1,5 @@
+switch x do
+	case 1 then
+		y = 2
+	case else
+		y = 3
