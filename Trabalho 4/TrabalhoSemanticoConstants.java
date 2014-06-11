@@ -33,113 +33,105 @@ public interface TrabalhoSemanticoConstants {
   /** RegularExpression Id. */
   int PROCEDURE = 19;
   /** RegularExpression Id. */
-  int GLOBAL = 20;
+  int CONSTANT = 20;
   /** RegularExpression Id. */
-  int PUBLIC = 21;
+  int ENUM = 21;
   /** RegularExpression Id. */
-  int EXPORT = 22;
+  int BY = 22;
   /** RegularExpression Id. */
-  int OVERRIDE = 23;
+  int SWITCH = 23;
   /** RegularExpression Id. */
-  int CONSTANT = 24;
+  int DO = 24;
   /** RegularExpression Id. */
-  int ENUM = 25;
+  int THEN = 25;
   /** RegularExpression Id. */
-  int BY = 26;
+  int CASE = 26;
   /** RegularExpression Id. */
-  int SWITCH = 27;
+  int CONTINUE = 27;
   /** RegularExpression Id. */
-  int DO = 28;
+  int RETRY = 28;
   /** RegularExpression Id. */
-  int THEN = 29;
+  int EXIT = 29;
   /** RegularExpression Id. */
-  int CASE = 30;
+  int TO = 30;
   /** RegularExpression Id. */
-  int CONTINUE = 31;
+  int PROFILE = 31;
   /** RegularExpression Id. */
-  int RETRY = 32;
+  int PROFILE_TIME = 32;
   /** RegularExpression Id. */
-  int EXIT = 33;
+  int TRACE = 33;
   /** RegularExpression Id. */
-  int TO = 34;
+  int BATCH = 34;
   /** RegularExpression Id. */
-  int PROFILE = 35;
+  int TYPE_CHECK = 35;
   /** RegularExpression Id. */
-  int PROFILE_TIME = 36;
+  int INLINE = 36;
   /** RegularExpression Id. */
-  int TRACE = 37;
+  int WARNING = 37;
   /** RegularExpression Id. */
-  int BATCH = 38;
+  int SAVE = 38;
   /** RegularExpression Id. */
-  int TYPE_CHECK = 39;
+  int RESTORE = 39;
   /** RegularExpression Id. */
-  int INLINE = 40;
+  int STRICT = 40;
   /** RegularExpression Id. */
-  int WARNING = 41;
+  int LOOP = 41;
   /** RegularExpression Id. */
-  int SAVE = 42;
+  int GOTO = 42;
   /** RegularExpression Id. */
-  int RESTORE = 43;
+  int NOT = 43;
   /** RegularExpression Id. */
-  int STRICT = 44;
+  int AND = 44;
   /** RegularExpression Id. */
-  int LOOP = 45;
+  int OR = 45;
   /** RegularExpression Id. */
-  int GOTO = 46;
+  int XOR = 46;
   /** RegularExpression Id. */
-  int NOT = 47;
+  int AS = 47;
   /** RegularExpression Id. */
-  int AND = 48;
+  int LABEL = 48;
   /** RegularExpression Id. */
-  int OR = 49;
+  int UNTIL = 49;
   /** RegularExpression Id. */
-  int XOR = 50;
+  int DOLAR = 50;
   /** RegularExpression Id. */
-  int AS = 51;
+  int END = 51;
   /** RegularExpression Id. */
-  int LABEL = 52;
+  int ALPHA = 52;
   /** RegularExpression Id. */
-  int UNTIL = 53;
+  int DIGITDEC = 53;
   /** RegularExpression Id. */
-  int DOLAR = 54;
+  int DIGITHEX = 54;
   /** RegularExpression Id. */
-  int END = 55;
+  int DIGITOCT = 55;
   /** RegularExpression Id. */
-  int ALPHA = 56;
+  int DIGITBIN = 56;
   /** RegularExpression Id. */
-  int DIGITDEC = 57;
+  int USCORE = 57;
   /** RegularExpression Id. */
-  int DIGITHEX = 58;
+  int SYMBOL = 58;
   /** RegularExpression Id. */
-  int DIGITOCT = 59;
+  int CHAR = 59;
   /** RegularExpression Id. */
-  int DIGITBIN = 60;
+  int ESCCHAR = 60;
   /** RegularExpression Id. */
-  int USCORE = 61;
+  int STRING = 61;
   /** RegularExpression Id. */
-  int SYMBOL = 62;
+  int IDENTIFIER = 62;
   /** RegularExpression Id. */
-  int CHAR = 63;
+  int ATOMINTEGER = 63;
   /** RegularExpression Id. */
-  int ESCCHAR = 64;
+  int ATOMREAL = 64;
   /** RegularExpression Id. */
-  int STRING = 65;
+  int ATOMBINARY = 65;
   /** RegularExpression Id. */
-  int IDENTIFIER = 66;
+  int ATOMOCTAL = 66;
   /** RegularExpression Id. */
-  int ATOMINTEGER = 67;
+  int ATOMDECIMAL = 67;
   /** RegularExpression Id. */
-  int ATOMREAL = 68;
+  int ATOMHEXADECIMAL = 68;
   /** RegularExpression Id. */
-  int ATOMBINARY = 69;
-  /** RegularExpression Id. */
-  int ATOMOCTAL = 70;
-  /** RegularExpression Id. */
-  int ATOMDECIMAL = 71;
-  /** RegularExpression Id. */
-  int ATOMHEXADECIMAL = 72;
-  /** RegularExpression Id. */
-  int BIN = 73;
+  int BIN = 69;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -168,10 +160,6 @@ public interface TrabalhoSemanticoConstants {
     "\"function\"",
     "\"type\"",
     "\"procedure\"",
-    "\"global\"",
-    "\"public\"",
-    "\"export\"",
-    "\"override\"",
     "\"constant\"",
     "\"enum\"",
     "\"by\"",
