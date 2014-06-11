@@ -441,7 +441,6 @@ static Token valor = null;
   }
 
   static final public void Forstmt() throws ParseException {
-    flagBranchStmt++;
     jj_consume_token(FOR);
     Foridx();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -453,6 +452,7 @@ static Token valor = null;
       ;
     }
     jj_consume_token(DO);
+        flagBranchStmt++;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -478,6 +478,8 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(FOR);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
   }
 
@@ -499,9 +501,7 @@ static Token valor = null;
   }
 
   static final public void Foreachstmt() throws ParseException {
-    flagBranchStmt++;
     jj_consume_token(FOREACH);
-        flagBranchStmt++;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
       jj_consume_token(IDENTIFIER);
@@ -533,6 +533,7 @@ static Token valor = null;
       ;
     }
     jj_consume_token(DO);
+        flagBranchStmt++;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -558,6 +559,8 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(FOREACH);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
   }
 
@@ -567,7 +570,6 @@ static Token valor = null;
   }
 
   static final public void Whilestmt() throws ParseException {
-    flagBranchStmt++;
     jj_consume_token(WHILE);
     Expression();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -579,6 +581,7 @@ static Token valor = null;
       ;
     }
     jj_consume_token(DO);
+        flagBranchStmt++;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -604,11 +607,12 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(WHILE);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
   }
 
   static final public void Loopstmt() throws ParseException {
-    flagBranchStmt++;
     jj_consume_token(LOOP);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LABEL:
@@ -619,11 +623,14 @@ static Token valor = null;
       ;
     }
     jj_consume_token(DO);
+        flagBranchStmt++;
     Block();
     jj_consume_token(UNTIL);
     Expression();
     jj_consume_token(END);
     jj_consume_token(LOOP);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
   }
 
@@ -753,7 +760,6 @@ static Token valor = null;
   }
 
   static final public void Switchstmt() throws ParseException {
-    flagBranchStmt++;
     Switchtest();
     label_4:
     while (true) {
@@ -777,6 +783,8 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(SWITCH);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
   }
 
@@ -792,6 +800,7 @@ static Token valor = null;
       ;
     }
     jj_consume_token(DO);
+        flagBranchStmt++;
   }
 
   static final public void Case() throws ParseException {
@@ -1563,7 +1572,7 @@ static Token valor = null;
         ;
       }
         if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
-            int i;
+            int i = 0;
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
             if(i == 0)
@@ -1642,8 +1651,13 @@ static Token valor = null;
       jj_la1[73] = jj_gen;
       ;
     }
-        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente))
-            System.out.println("Erro! Vari\u00e1vel \u005c"" + t.toString() + "\u005c" n\u00e3o declarada no nivel atual!");
+        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
+            int i = 0;
+            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+
+            if(i == 0)
+                System.out.println("Erro! Vari\u00e1vel \u005c"" + t.toString() + "\u005c" n\u00e3o declarada no nivel atual!");
+        }
   }
 
   static final public void Slice() throws ParseException {
@@ -2116,13 +2130,18 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_46() {
-    if (jj_scan_token(85)) return true;
+  static private boolean jj_3R_37() {
+    if (jj_3R_43()) return true;
     return false;
   }
 
-  static private boolean jj_3R_37() {
-    if (jj_3R_43()) return true;
+  static private boolean jj_3R_51() {
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_46() {
+    if (jj_scan_token(85)) return true;
     return false;
   }
 
@@ -2133,11 +2152,6 @@ static Token valor = null;
       xsp = jj_scanpos;
       if (jj_3R_46()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  static private boolean jj_3R_51() {
-    if (jj_3R_28()) return true;
     return false;
   }
 
@@ -2220,11 +2234,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_31() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_20() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(72)) return true;
@@ -2235,6 +2244,11 @@ static Token valor = null;
     if (jj_scan_token(85)) return true;
     if (jj_3R_32()) return true;
     if (jj_scan_token(87)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_31() {
+    if (jj_3R_39()) return true;
     return false;
   }
 
@@ -2575,6 +2589,11 @@ static Token valor = null;
     return false;
   }
 
+  static private boolean jj_3_10() {
+    if (jj_3R_24()) return true;
+    return false;
+  }
+
   static private boolean jj_3_8() {
     if (jj_3R_23()) return true;
     return false;
@@ -2582,11 +2601,6 @@ static Token valor = null;
 
   static private boolean jj_3_3() {
     if (jj_3R_21()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_10() {
-    if (jj_3R_24()) return true;
     return false;
   }
 

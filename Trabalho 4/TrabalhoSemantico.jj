@@ -146,55 +146,64 @@ void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
 void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
 void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
 void Stringlit() : {} { <STRING> }
-void Forstmt() :
-{
-    flagBranchStmt++;
-}
+void Forstmt() : {}
 {
     <FOR> Foridx()
-    (Labelstmt())? <DO> (Block())?
+    (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    (Block())?
     <END> <FOR>
     {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
     }
 }
 void Foridx() : {} { <IDENTIFIER> "=" Expression() <TO> Expression() ( <BY> Expression())? }
-void Foreachstmt() :
-{
-    flagBranchStmt++;
-}
+void Foreachstmt() : {}
 {
     <FOREACH>
+    (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
-    (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO> (Block())?
+    (Block())?
     <END> <FOREACH>
     {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
     }
 }
 void Labelstmt() : {} { <LABEL> Stringlit() }
-void Whilestmt() :
-{
-    flagBranchStmt++;
-}
+void Whilestmt() : {}
 {
     <WHILE>
-    Expression() (Labelstmt())? <DO> (Block())?
+    Expression() (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    (Block())?
     <END> <WHILE>
     {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
     }
 }
-void Loopstmt() :
+void Loopstmt() : {}
 {
-    flagBranchStmt++;
-}
-{
-    <LOOP> (Labelstmt())? <DO> Block() <UNTIL> Expression()
+    <LOOP> (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    Block() <UNTIL> Expression()
     <END> <LOOP>
     {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
     }
 }
@@ -220,19 +229,24 @@ void Iftest() : {}
 }
 void Elsif() : {} { <ELSIF> Expression() <THEN> ( Block())? }
 void Else() : {} { <ELSE> (Block())? }
-void Switchstmt() :
-{
-    flagBranchStmt++;
-}
+void Switchstmt() : {}
 {
     Switchtest()
     (Case())+ (Caseelse())?
     <END> <SWITCH>
     {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
         flagBranchStmt--;
     }
 }
-void Switchtest() : {} { <SWITCH> Expression() (Labelstmt())? <DO> }
+void Switchtest() : {}
+{
+    <SWITCH> Expression() (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+}
 void Case() : {} { <CASE> Caselist() <THEN> (Block())?}
 void Caselist() : {} { Expression() ("," Expression())* }
 void Caseelse() : {} { <ELSE> ( Block())?}
@@ -449,7 +463,7 @@ void Lastexpr() :
     t = <IDENTIFIER> (Variable() | Callf())?
     {
         if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
-            int i;
+            int i = 0;
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
             if(i == 0)
@@ -465,8 +479,13 @@ void Varexp() :
 {
     t = <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
     {
-        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente))
-            System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
+            int i = 0;
+            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+
+            if(i == 0)
+                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+        }
     }
 }
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
