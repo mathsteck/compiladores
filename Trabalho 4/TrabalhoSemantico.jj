@@ -303,9 +303,9 @@ void Vardeclare() :
     t = <IDENTIFIER> Identlist()
     {
         if(flagBranchStmt == 0)
-            atualizaCategoria(TabelaSimb, t.toString());
+            atualizaCategoria(TabelaSimb, "var");//t.toString());
         else
-            atualizaCategoria(TabelaAux, t.toString());
+            atualizaCategoria(TabelaAux, "var");//t.toString());
         Integer chave = buscaTipo(t.toString());
 
         if(chave > -1) {
@@ -318,6 +318,14 @@ void Vardeclare() :
                 atualizaTipo(TabelaAux, chave);
                 atualizaNBytes(TabelaAux, builtin.getNBytes());
             }
+        }
+        else {
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+
+            if(flagBranchStmt == 0)
+                removeChaves(TabelaSimb, listaChaves);
+            else
+                removeChaves(TabelaAux, listaChaves);
         }
         listaChaves.clear();
     }
@@ -395,6 +403,9 @@ void Procdeclare() :
         nivelCorrente++;
     }
     "(" (Paramlist())? ")" (Block())?
+    {
+        dado.setNParametros(listaChaves.size());
+    }
     <END> <PROCEDURE>
     {
         if(procedureReturn > 0)
@@ -465,7 +476,36 @@ void Funcdeclare() :
         nivelCorrente--;
     }
 }
-void Typedeclare() : {} { <TYPE> <IDENTIFIER> "(" Parameter() ")" (Block())? <END> <TYPE>}
+void Typedeclare() :
+{
+    Token t, s;
+}
+{
+    s = <TYPE>
+    t = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(t.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(s.toString());
+
+        insereTabela(TabelaSimb, dado);
+        listaChaves.clear();
+        nivelCorrente++;
+
+    }
+    "(" Parameter() ")" (Block())?
+    <END> <TYPE>
+    {
+        if(nReturn < 1)
+            System.out.println("Erro! Type precisa de retorno!");
+        nReturn = 0;
+
+        removeNivel(TabelaSimb, nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
+    }
+}
 void Expression() : {} { Seqexpr()| Binexpr() }
 void Binexpr() : {} { Relexpr() (Binop() Relexpr())* }
 void Binop() : {} { <AND> | <OR> | <XOR> }
@@ -577,7 +617,7 @@ Integer buscaTipo(String Identifier) :
             chave = (Integer) elemento.nextElement();
             dado = TabelaSimb.get(chave);
 
-            if(dado.getIdentificador().equals(Identifier))
+            if(dado.getIdentificador().equals(Identifier) && dado.getCategoria().equals("type"))
                 return chave;
         }
         return -1;
@@ -685,13 +725,24 @@ void removeNivel(Hashtable<Integer, Dado> tabela, Integer nivel) :
     }
 }
 
+void removeChaves(Hashtable<Integer, Dado> tabela, ArrayList<Integer> chaves) :
+{}
+{
+    {
+        for(Integer chave : chaves) {
+            tabela.remove(chave);
+        }
+    }
+}
+
+
 void initBuiltins(): {}
 {
     {
         //Atom
         Dado atom = new Dado();
         atom.setIdentificador("atom");
-        atom.setCategoria("tipo");
+        atom.setCategoria("type");
         atom.setTipo(indexTabela);
         // FIXME: Definir o tamanho em bytes
         atom.setNBytes(5);
@@ -702,7 +753,7 @@ void initBuiltins(): {}
         //Integer
         Dado integer = new Dado();
         integer.setIdentificador("integer");
-        integer.setCategoria("tipo");
+        integer.setCategoria("type");
         integer.setTipo(indexTabela);
         // FIXME: Definir o tamanho em bytes
         integer.setNBytes(4);
