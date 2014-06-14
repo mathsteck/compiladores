@@ -20,10 +20,10 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-            //System.out.println("============= SIMB ===============");
-            //imprimeTabela(TabelaSimb);
-            //System.out.println("============= AUX ================");
-            //imprimeTabela(TabelaAux);
+            System.out.println("============= SIMB ===============");
+            imprimeTabela(TabelaSimb);
+            System.out.println("============= AUX ================");
+            imprimeTabela(TabelaAux);
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -214,6 +214,7 @@ void Ifstmt() : {}
     (LOOKAHEAD(2) Elsif())* ( Else())?
     <END> <IF>
     {
+        imprimeTabela(TabelaAux);
         removeNivel(TabelaAux, flagBranchStmt);
         listaChaves.clear();
         flagBranchStmt--;
@@ -263,25 +264,9 @@ void Switchtest() : {}
         flagBranchStmt++;
     }
 }
-void Case() : {}
-{
-    <CASE>
-    {
-        removeNivel(TabelaAux, flagBranchStmt);
-        listaChaves.clear();
-    }
-    Caselist() <THEN> (Block())?
-}
+void Case() : {} { <CASE>Caselist() <THEN> (Block())? }
 void Caselist() : {} { Expression() ("," Expression())* }
-void Caseelse() : {}
-{
-    <ELSE>
-    {
-        removeNivel(TabelaAux, flagBranchStmt);
-        listaChaves.clear();
-    }
-    ( Block())?
-}
+void Caseelse() : {} { <ELSE> (Block())? }
 void Assignmono() : {} { Varexp() "=" Expression()}
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
@@ -306,10 +291,17 @@ void Vardeclare() :
             atualizaCategoria(TabelaSimb, "var");//t.toString());
         else
             atualizaCategoria(TabelaAux, "var");//t.toString());
-        Integer chave = buscaTipo(t.toString());
+
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
 
         if(chave > -1) {
-            Dado builtin = TabelaSimb.get(chave);
+            Dado builtin = tabela.get(chave);
             if(flagBranchStmt == 0) {
                 atualizaTipo(TabelaSimb, chave);
                 atualizaNBytes(TabelaSimb, builtin.getNBytes());
@@ -381,10 +373,92 @@ void Constdeclare() :
     }
 }
 
-void Enumdeclare() : {} { <ENUM> (Enumval() | Enumtype()) }
-void Enumval() : {} { (<BY> Enumdelta())? Identlist() }
+void Enumdeclare() : {}
+{
+    <ENUM> (Enumval() | Enumtype())
+}
+void Enumval() : {}
+{
+    (<BY> Enumdelta())? Identlist()
+    {
+        Integer chave = buscaTipo(TabelaSimb, "integer");
+        if(flagBranchStmt == 0) {
+            atualizaCategoria(TabelaSimb, "constant");
+            atualizaTipo(TabelaSimb, chave);
+        }
+        else {
+            atualizaCategoria(TabelaAux, "constant");
+            atualizaTipo(TabelaAux, chave);
+        }
+        listaChaves.clear();
+        flagCategoria = "";
+    }
+}
 void Enumdelta() : {} { ("+" | "-" | "*" | "/")? Expression() }
-void Enumtype() : {} { <TYPE> (<BY> Enumdelta())? Identlist() <END> <TYPE>}
+void Enumtype() :
+{
+    Integer chave;
+    Dado dado;
+    Token t;
+}
+{
+    <TYPE> (<BY> Enumdelta())?
+    t = <IDENTIFIER>
+    {
+        // Neste caso precisa ser do tipo inteiro
+        chave = buscaTipo(TabelaSimb, "integer");
+
+        if(chave > -1) {
+            dado = new Dado();
+            dado.setIdentificador(t.toString());
+            dado.setNivel(nivelCorrente);
+            dado.setCategoria("type");
+            dado.setTipo(chave);
+            if(flagBranchStmt == 0)
+                insereTabela(TabelaSimb, dado);
+            else
+                insereTabela(TabelaAux, dado);
+        }
+        else {
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+        }
+        listaChaves.clear();
+    }
+    Identlist()
+    {
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
+
+        if(chave > -1) {
+            Dado builtin = tabela.get(chave);
+            if(flagBranchStmt == 0) {
+                atualizaTipo(TabelaSimb, chave);
+                atualizaNBytes(TabelaSimb, builtin.getNBytes());
+                atualizaCategoria(TabelaSimb, "constant");
+            }
+            else {
+                atualizaTipo(TabelaAux, chave);
+                atualizaNBytes(TabelaAux, builtin.getNBytes());
+                atualizaCategoria(TabelaAux, "constant");
+            }
+        }
+        else {
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+
+            if(flagBranchStmt == 0)
+                removeChaves(TabelaSimb, listaChaves);
+            else
+                removeChaves(TabelaAux, listaChaves);
+        }
+        listaChaves.clear();
+    }
+    <END> <TYPE>
+}
 void Procdeclare() :
 {
     Dado dado;
@@ -426,7 +500,7 @@ void Parameter() :
 {
     t = <IDENTIFIER> n = <IDENTIFIER>
     {
-        Integer chave = buscaTipo(t.toString());
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
 
         if(chave > -1) {
             dado = new Dado();
@@ -605,17 +679,17 @@ void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
     }
 }
 
-Integer buscaTipo(String Identifier) :
+Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identifier) :
 {
     Integer chave;
-    Enumeration elemento = TabelaSimb.keys();
+    Enumeration elemento = tabela.keys();
     Dado dado;
 }
 {
     {
         while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
-            dado = TabelaSimb.get(chave);
+            dado = tabela.get(chave);
 
             if(dado.getIdentificador().equals(Identifier) && dado.getCategoria().equals("type"))
                 return chave;

@@ -19,10 +19,10 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-            //System.out.println("============= SIMB ===============");
-            //imprimeTabela(TabelaSimb);
-            //System.out.println("============= AUX ================");
-            //imprimeTabela(TabelaAux);
+            System.out.println("============= SIMB ===============");
+            imprimeTabela(TabelaSimb);
+            System.out.println("============= AUX ================");
+            imprimeTabela(TabelaAux);
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -660,6 +660,7 @@ static Token valor = null;
     }
     jj_consume_token(END);
     jj_consume_token(IF);
+        imprimeTabela(TabelaAux);
         removeNivel(TabelaAux, flagBranchStmt);
         listaChaves.clear();
         flagBranchStmt--;
@@ -809,8 +810,6 @@ static Token valor = null;
 
   static final public void Case() throws ParseException {
     jj_consume_token(CASE);
-        removeNivel(TabelaAux, flagBranchStmt);
-        listaChaves.clear();
     Caselist();
     jj_consume_token(THEN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -857,8 +856,6 @@ static Token valor = null;
 
   static final public void Caseelse() throws ParseException {
     jj_consume_token(ELSE);
-        removeNivel(TabelaAux, flagBranchStmt);
-        listaChaves.clear();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -966,10 +963,17 @@ static Token valor = null;
             atualizaCategoria(TabelaSimb, "var");//t.toString());
         else
             atualizaCategoria(TabelaAux, "var");//t.toString());
-        Integer chave = buscaTipo(t.toString());
+
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
 
         if(chave > -1) {
-            Dado builtin = TabelaSimb.get(chave);
+            Dado builtin = tabela.get(chave);
             if(flagBranchStmt == 0) {
                 atualizaTipo(TabelaSimb, chave);
                 atualizaNBytes(TabelaSimb, builtin.getNBytes());
@@ -1083,6 +1087,17 @@ static Token valor = null;
       ;
     }
     Identlist();
+        Integer chave = buscaTipo(TabelaSimb, "integer");
+        if(flagBranchStmt == 0) {
+            atualizaCategoria(TabelaSimb, "constant");
+            atualizaTipo(TabelaSimb, chave);
+        }
+        else {
+            atualizaCategoria(TabelaAux, "constant");
+            atualizaTipo(TabelaAux, chave);
+        }
+        listaChaves.clear();
+        flagCategoria = "";
   }
 
   static final public void Enumdelta() throws ParseException {
@@ -1118,6 +1133,9 @@ static Token valor = null;
   }
 
   static final public void Enumtype() throws ParseException {
+    Integer chave;
+    Dado dado;
+    Token t;
     jj_consume_token(TYPE);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BY:
@@ -1128,7 +1146,56 @@ static Token valor = null;
       jj_la1[48] = jj_gen;
       ;
     }
+    t = jj_consume_token(IDENTIFIER);
+        // Neste caso precisa ser do tipo inteiro
+        chave = buscaTipo(TabelaSimb, "integer");
+
+        if(chave > -1) {
+            dado = new Dado();
+            dado.setIdentificador(t.toString());
+            dado.setNivel(nivelCorrente);
+            dado.setCategoria("type");
+            dado.setTipo(chave);
+            if(flagBranchStmt == 0)
+                insereTabela(TabelaSimb, dado);
+            else
+                insereTabela(TabelaAux, dado);
+        }
+        else {
+            System.out.println("Erro! Palavra reservada \u005c"" + t.toString() + "\u005c" n\u00e3o existe");
+        }
+        listaChaves.clear();
     Identlist();
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
+
+        if(chave > -1) {
+            Dado builtin = tabela.get(chave);
+            if(flagBranchStmt == 0) {
+                atualizaTipo(TabelaSimb, chave);
+                atualizaNBytes(TabelaSimb, builtin.getNBytes());
+                atualizaCategoria(TabelaSimb, "constant");
+            }
+            else {
+                atualizaTipo(TabelaAux, chave);
+                atualizaNBytes(TabelaAux, builtin.getNBytes());
+                atualizaCategoria(TabelaAux, "constant");
+            }
+        }
+        else {
+            System.out.println("Erro! O tipo \u005c"" + t.toString() + "\u005c" n\u00e3o existe!\u005cn");
+
+            if(flagBranchStmt == 0)
+                removeChaves(TabelaSimb, listaChaves);
+            else
+                removeChaves(TabelaAux, listaChaves);
+        }
+        listaChaves.clear();
     jj_consume_token(END);
     jj_consume_token(TYPE);
   }
@@ -1213,7 +1280,7 @@ static Token valor = null;
     Token t, n;
     t = jj_consume_token(IDENTIFIER);
     n = jj_consume_token(IDENTIFIER);
-        Integer chave = buscaTipo(t.toString());
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
 
         if(chave > -1) {
             dado = new Dado();
@@ -1923,13 +1990,13 @@ static Token valor = null;
         }
   }
 
-  static final public Integer buscaTipo(String Identifier) throws ParseException {
+  static final public Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identifier) throws ParseException {
     Integer chave;
-    Enumeration elemento = TabelaSimb.keys();
+    Enumeration elemento = tabela.keys();
     Dado dado;
         while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
-            dado = TabelaSimb.get(chave);
+            dado = tabela.get(chave);
 
             if(dado.getIdentificador().equals(Identifier) && dado.getCategoria().equals("type"))
                 {if (true) return chave;}
@@ -2143,6 +2210,222 @@ static Token valor = null;
     return false;
   }
 
+  static private boolean jj_3_5() {
+    if (jj_3R_23()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_6() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_9() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_31() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_39() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_30() {
+    if (jj_scan_token(74)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_14() {
+    if (jj_scan_token(74)) return true;
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_19() {
+    if (jj_3R_29()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(75)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(76)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(77)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(78)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(79)) return true;
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_22() {
+    if (jj_3R_29()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_30()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(71)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_21() {
+    if (jj_3R_29()) return true;
+    if (jj_scan_token(71)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_37() {
+    if (jj_3R_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_51() {
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_23() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_46() {
+    if (jj_scan_token(85)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_44() {
+    Token xsp;
+    if (jj_3R_46()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_46()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_69() {
+    if (jj_scan_token(85)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_68() {
+    Token xsp;
+    if (jj_3R_69()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_69()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_48() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(50)) {
+    jj_scanpos = xsp;
+    if (jj_3R_51()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_42() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(63)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(64)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(65)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(66)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(67)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(68)) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_36() {
+    if (jj_3R_42()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_28() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_36()) {
+    jj_scanpos = xsp;
+    if (jj_3R_37()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(61)) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_43() {
+    if (jj_scan_token(88)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_48()) jj_scanpos = xsp;
+    if (jj_scan_token(89)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_67() {
+    if (jj_scan_token(72)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_20() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(72)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_27() {
+    if (jj_scan_token(85)) return true;
+    if (jj_3R_32()) return true;
+    if (jj_scan_token(87)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_38() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_13()) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_13() {
+    if (jj_3R_27()) return true;
+    return false;
+  }
+
   static private boolean jj_3_12() {
     if (jj_3R_27()) return true;
     return false;
@@ -2165,11 +2448,6 @@ static Token valor = null;
 
   static private boolean jj_3R_60() {
     if (jj_3R_62()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_5() {
-    if (jj_3R_23()) return true;
     return false;
   }
 
@@ -2212,23 +2490,19 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_31() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_52() {
     if (jj_3R_56()) return true;
     return false;
   }
 
-  static private boolean jj_3_6() {
-    if (jj_3R_19()) return true;
+  static private boolean jj_3_4() {
+    if (jj_3R_22()) return true;
     return false;
   }
 
-  static private boolean jj_3_9() {
-    if (jj_3R_21()) return true;
+  static private boolean jj_3R_24() {
+    if (jj_scan_token(ELSIF)) return true;
+    if (jj_3R_32()) return true;
     return false;
   }
 
@@ -2283,11 +2557,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3_1() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_54() {
     if (jj_3R_57()) return true;
     Token xsp;
@@ -2329,11 +2598,6 @@ static Token valor = null;
   static private boolean jj_3R_34() {
     if (jj_scan_token(72)) return true;
     if (jj_3R_32()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_39() {
-    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -2431,88 +2695,8 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_30() {
-    if (jj_scan_token(74)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_19() {
-    if (jj_3R_29()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(75)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(76)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(77)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(78)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(79)) return true;
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_22() {
-    if (jj_3R_29()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_30()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(71)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_21() {
-    if (jj_3R_29()) return true;
-    if (jj_scan_token(71)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_23() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_4() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_24() {
-    if (jj_scan_token(ELSIF)) return true;
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_14() {
-    if (jj_scan_token(74)) return true;
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_37() {
-    if (jj_3R_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_51() {
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
   static private boolean jj_3_10() {
     if (jj_3R_24()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_46() {
-    if (jj_scan_token(85)) return true;
     return false;
   }
 
@@ -2521,130 +2705,13 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_44() {
-    Token xsp;
-    if (jj_3R_46()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_46()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_69() {
-    if (jj_scan_token(85)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_68() {
-    Token xsp;
-    if (jj_3R_69()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_69()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   static private boolean jj_3_3() {
     if (jj_3R_21()) return true;
     return false;
   }
 
-  static private boolean jj_3R_48() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(50)) {
-    jj_scanpos = xsp;
-    if (jj_3R_51()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_42() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(63)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(64)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(65)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(66)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(67)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(68)) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_36() {
-    if (jj_3R_42()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_28() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_36()) {
-    jj_scanpos = xsp;
-    if (jj_3R_37()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(61)) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_43() {
-    if (jj_scan_token(88)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_48()) jj_scanpos = xsp;
-    if (jj_scan_token(89)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_67() {
-    if (jj_scan_token(72)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_20() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_scan_token(72)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_27() {
-    if (jj_scan_token(85)) return true;
-    if (jj_3R_32()) return true;
-    if (jj_scan_token(87)) return true;
-    return false;
-  }
-
   static private boolean jj_3_7() {
     if (jj_3R_20()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_38() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_13()) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_13() {
-    if (jj_3R_27()) return true;
     return false;
   }
 
