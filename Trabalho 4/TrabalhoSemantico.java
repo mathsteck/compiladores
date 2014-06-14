@@ -19,10 +19,10 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-            System.out.println("============= SIMB ===============");
-            imprimeTabela(TabelaSimb);
-            System.out.println("============= AUX ================");
-            imprimeTabela(TabelaAux);
+            //System.out.println("============= SIMB ===============");
+            //imprimeTabela(TabelaSimb);
+            //System.out.println("============= AUX ================");
+            //imprimeTabela(TabelaAux);
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -705,6 +705,8 @@ static Token valor = null;
 
   static final public void Elsif() throws ParseException {
     jj_consume_token(ELSIF);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
     Expression();
     jj_consume_token(THEN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -734,6 +736,8 @@ static Token valor = null;
 
   static final public void Else() throws ParseException {
     jj_consume_token(ELSE);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -805,6 +809,8 @@ static Token valor = null;
 
   static final public void Case() throws ParseException {
     jj_consume_token(CASE);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
     Caselist();
     jj_consume_token(THEN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -851,6 +857,8 @@ static Token valor = null;
 
   static final public void Caseelse() throws ParseException {
     jj_consume_token(ELSE);
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IF:
     case WHILE:
@@ -2104,32 +2112,6 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3_5() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_6() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_9() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_14() {
-    if (jj_scan_token(74)) return true;
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_37() {
     if (jj_3R_43()) return true;
     return false;
@@ -2152,6 +2134,11 @@ static Token valor = null;
       xsp = jj_scanpos;
       if (jj_3R_46()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  static private boolean jj_3_5() {
+    if (jj_3R_23()) return true;
     return false;
   }
 
@@ -2220,6 +2207,16 @@ static Token valor = null;
     return false;
   }
 
+  static private boolean jj_3_6() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_9() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_43() {
     if (jj_scan_token(88)) return true;
     Token xsp;
@@ -2244,6 +2241,11 @@ static Token valor = null;
     if (jj_scan_token(85)) return true;
     if (jj_3R_32()) return true;
     if (jj_scan_token(87)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_19()) return true;
     return false;
   }
 
@@ -2578,14 +2580,14 @@ static Token valor = null;
     return false;
   }
 
-  static private boolean jj_3R_24() {
-    if (jj_scan_token(ELSIF)) return true;
-    if (jj_3R_32()) return true;
+  static private boolean jj_3_4() {
+    if (jj_3R_22()) return true;
     return false;
   }
 
-  static private boolean jj_3_4() {
-    if (jj_3R_22()) return true;
+  static private boolean jj_3R_24() {
+    if (jj_scan_token(ELSIF)) return true;
+    if (jj_3R_32()) return true;
     return false;
   }
 
@@ -2606,6 +2608,12 @@ static Token valor = null;
 
   static private boolean jj_3_7() {
     if (jj_3R_20()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_14() {
+    if (jj_scan_token(74)) return true;
+    if (jj_3R_28()) return true;
     return false;
   }
 

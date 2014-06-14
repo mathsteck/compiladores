@@ -20,10 +20,10 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-            System.out.println("============= SIMB ===============");
-            imprimeTabela(TabelaSimb);
-            System.out.println("============= AUX ================");
-            imprimeTabela(TabelaAux);
+            //System.out.println("============= SIMB ===============");
+            //imprimeTabela(TabelaSimb);
+            //System.out.println("============= AUX ================");
+            //imprimeTabela(TabelaAux);
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -227,8 +227,24 @@ void Iftest() : {}
     }
     (Block())?
 }
-void Elsif() : {} { <ELSIF> Expression() <THEN> ( Block())? }
-void Else() : {} { <ELSE> (Block())? }
+void Elsif() : {}
+{
+    <ELSIF>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    Expression()<THEN> ( Block())?
+}
+void Else() : {}
+{
+    <ELSE>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    (Block())?
+}
 void Switchstmt() : {}
 {
     Switchtest()
@@ -247,9 +263,25 @@ void Switchtest() : {}
         flagBranchStmt++;
     }
 }
-void Case() : {} { <CASE> Caselist() <THEN> (Block())?}
+void Case() : {}
+{
+    <CASE>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    Caselist() <THEN> (Block())?
+}
 void Caselist() : {} { Expression() ("," Expression())* }
-void Caseelse() : {} { <ELSE> ( Block())?}
+void Caseelse() : {}
+{
+    <ELSE>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    ( Block())?
+}
 void Assignmono() : {} { Varexp() "=" Expression()}
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
