@@ -97,41 +97,43 @@ public interface TrabalhoSemanticoConstants {
   /** RegularExpression Id. */
   int END = 51;
   /** RegularExpression Id. */
-  int ALPHA = 52;
+  int FUNCBUILT = 52;
   /** RegularExpression Id. */
-  int DIGITDEC = 53;
+  int ALPHA = 53;
   /** RegularExpression Id. */
-  int DIGITHEX = 54;
+  int DIGITDEC = 54;
   /** RegularExpression Id. */
-  int DIGITOCT = 55;
+  int DIGITHEX = 55;
   /** RegularExpression Id. */
-  int DIGITBIN = 56;
+  int DIGITOCT = 56;
   /** RegularExpression Id. */
-  int USCORE = 57;
+  int DIGITBIN = 57;
   /** RegularExpression Id. */
-  int SYMBOL = 58;
+  int USCORE = 58;
   /** RegularExpression Id. */
-  int CHAR = 59;
+  int SYMBOL = 59;
   /** RegularExpression Id. */
-  int ESCCHAR = 60;
+  int CHAR = 60;
   /** RegularExpression Id. */
-  int STRING = 61;
+  int ESCCHAR = 61;
   /** RegularExpression Id. */
-  int IDENTIFIER = 62;
+  int STRING = 62;
   /** RegularExpression Id. */
-  int ATOMINTEGER = 63;
+  int IDENTIFIER = 63;
   /** RegularExpression Id. */
-  int ATOMREAL = 64;
+  int ATOMINTEGER = 64;
   /** RegularExpression Id. */
-  int ATOMBINARY = 65;
+  int ATOMREAL = 65;
   /** RegularExpression Id. */
-  int ATOMOCTAL = 66;
+  int ATOMBINARY = 66;
   /** RegularExpression Id. */
-  int ATOMDECIMAL = 67;
+  int ATOMOCTAL = 67;
   /** RegularExpression Id. */
-  int ATOMHEXADECIMAL = 68;
+  int ATOMDECIMAL = 68;
   /** RegularExpression Id. */
-  int BIN = 69;
+  int ATOMHEXADECIMAL = 69;
+  /** RegularExpression Id. */
+  int BIN = 70;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -192,6 +194,7 @@ public interface TrabalhoSemanticoConstants {
     "\"until\"",
     "\"$\"",
     "\"end\"",
+    "<FUNCBUILT>",
     "<ALPHA>",
     "<DIGITDEC>",
     "<DIGITHEX>",

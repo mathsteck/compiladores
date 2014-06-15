@@ -11,6 +11,7 @@ static Integer nivelCorrente = 0;
 static String flagCategoria = "";
 static Integer flagBranchStmt = 0;
 static Integer nReturn = 0, procedureReturn = 0;
+static Integer countArgs = 0;
 static Dado dado = new Dado();
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
@@ -87,8 +88,9 @@ TOKEN: { <LABEL: "label"> }
 TOKEN: { <UNTIL: "until"> }
 TOKEN: { <DOLAR: "$"> }
 TOKEN: { <END: "end"> }
-
 /* Identificadores */
+TOKEN: { <#FUNCBUILT: "puts"|"print"|"lenght"|"printf"|"getc"|"find"
+         |"sprintf"|"rand"|"sqrt"|"cos"|"sin" |"tan" |"log"|"power">}
 TOKEN: { <#ALPHA: ["a"-"z"] | ["A"-"Z"]> }
 TOKEN: { <#DIGITDEC: ["0"-"9"]> }
 TOKEN: { <#DIGITHEX: ["0"-"9"] | ["A"-"F"]> }
@@ -108,7 +110,7 @@ TOKEN:
               | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\"")) | ("b\""(<DIGITBIN>
               | " " | <USCORE>)+ "\"") | ("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") >
 }
-TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" > }
+TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" | <FUNCBUILT> > }
 TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
 TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }     
 TOKEN: { <ATOMBINARY: "0b"(<DIGITBIN>)+> }
@@ -473,10 +475,10 @@ void Funcdeclare() :
         listaChaves.clear();
         nivelCorrente++;
     }
-    "("(Paramlist() {
+    "("(Paramlist())?")"
+    {
         dado.setNParametros(listaChaves.size());
     }
-    )?")"
     (Block())?
     <END> <FUNCTION>
     {
@@ -545,7 +547,19 @@ void Lastexpr() :
     |
     "("Expression()")"
     |
-    t = <IDENTIFIER> (Variable() | Callf())?
+    t = <IDENTIFIER>
+    (Variable() | Callf(t)
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
+            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+        }
+
+        String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
+
+        if(Categoria != null && !Categoria.equals("function")) {
+            System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
+        }
+    })?
     {
         naoDeclaradoFluxo(t);
     }
@@ -563,15 +577,52 @@ void Varexp() :
 }
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
 void Seqexpr() : {} { "{" ( <DOLAR> | Objexpr() (LOOKAHEAD(2) "," Objexpr())* ("," <DOLAR>)? )? "}" }
-void Call() : {} { <IDENTIFIER> "(" (Arglist())? ")"}
-void Callf() : {} { "(" (Arglist())? ")"}
-void Arglist() : {} { Expression() ("," Expression())* }
+void Call() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER>
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
+            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+        }
+    }
+    "(" (Arglist())? ")"
+    {
+        Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
+
+        if(nParam != countArgs)
+        {
+            System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+        }
+        countArgs = 0;
+    }
+}
+void Callf(Token t) : {}
+{
+    "(" (Arglist())? ")"
+    {
+        Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
+
+        if(nParam != countArgs)
+        {
+            System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+        }
+        countArgs = 0;
+    }
+}
+void Arglist() : {}
+{
+    Expression() { countArgs++; }
+    ("," Expression() { countArgs++; })*
+}
 void Objexpr() : {} { Atomexpr() | Seqexpr() | <STRING> }
 void Atomexpr() : {}{ <ATOMINTEGER> | <ATOMREAL> | <ATOMBINARY> | <ATOMOCTAL> | <ATOMDECIMAL> | <ATOMHEXADECIMAL> }
 
 
 /* Funcoes Auxiliares */
-boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String IdProcurado, Integer NivelProcurado) :
+boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String Identificador, Integer NivelProcurado) :
 {
     Enumeration t = tabela.keys();
     Integer chave;
@@ -583,7 +634,7 @@ boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String IdProcurado, Intege
             chave = (Integer)t.nextElement();
             dado = tabela.get(chave);
 
-            if(dado.getIdentificador().equals(IdProcurado) && dado.getNivel() == NivelProcurado){
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == NivelProcurado){
                 return false;/* ja existe na tabela*/
             }
         }
@@ -619,7 +670,7 @@ void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
     }
 }
 
-Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identifier) :
+Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identificador) :
 {
     Integer chave;
     Enumeration elemento = tabela.keys();
@@ -631,9 +682,48 @@ Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identifier) :
             chave = (Integer) elemento.nextElement();
             dado = tabela.get(chave);
 
-            if(dado.getIdentificador().equals(Identifier) && dado.getCategoria().equals("type"))
+            if(dado.getIdentificador().equals(Identificador) && dado.getCategoria().equals("type"))
                 return chave;
         }
+        return -1;
+    }
+}
+
+String buscaCategoria(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == Nivel)
+                return dado.getCategoria();
+        }
+        return null;
+    }
+}
+
+Integer getNParametros(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && Nivel == dado.getNivel())
+                return dado.getNParametros();
+        }
+
         return -1;
     }
 }
@@ -810,6 +900,141 @@ void initBuiltins(): {}
 
         insereTabela(TabelaSimb, integer);
 
+        //?
+        Dado question = new Dado();
+        question.setIdentificador("?");
+        question.setCategoria("procedure");
+        question.setTipo(indexTabela);
+        question.setNivel(0);
+
+        insereTabela(TabelaSimb, question);
+
+        //print
+        Dado print = new Dado();
+        print.setIdentificador("print");
+        print.setCategoria("procedure");
+        print.setNParametros(3);
+        print.setTipo(indexTabela);
+        print.setNivel(0);
+
+        insereTabela(TabelaSimb, print);
+
+        //puts
+        Dado puts = new Dado();
+        puts.setIdentificador("puts");
+        puts.setCategoria("procedure");
+        puts.setNParametros(2);
+        puts.setTipo(indexTabela);
+        puts.setNivel(0);
+
+        insereTabela(TabelaSimb, puts);
+
+        Dado printf = new Dado();
+        printf.setIdentificador("printf");
+        printf.setCategoria("procedure");
+        printf.setNParametros(3);
+        printf.setTipo(indexTabela);
+        printf.setNivel(0);
+
+        insereTabela(TabelaSimb, printf);
+        Dado length = new Dado();
+        length.setIdentificador("length");
+        length.setCategoria("function");
+        length.setNParametros(1);
+        length.setTipo(indexTabela);
+        length.setNivel(0);
+
+        insereTabela(TabelaSimb, length);
+
+        Dado getc = new Dado();
+        getc.setIdentificador("getc");
+        getc.setCategoria("function");
+        getc.setNParametros(1);
+        getc.setTipo(indexTabela);
+        getc.setNivel(0);
+
+        insereTabela(TabelaSimb, getc);
+
+        Dado find = new Dado();
+        find.setIdentificador("find");
+        find.setCategoria("function");
+        find.setNParametros(3);
+        find.setTipo(indexTabela);
+        find.setNivel(0);
+
+        insereTabela(TabelaSimb, find);
+
+        Dado sprintf = new Dado();
+        sprintf.setIdentificador("sprintf");
+        sprintf.setCategoria("function");
+        sprintf.setNParametros(2);
+        sprintf.setTipo(indexTabela);
+        sprintf.setNivel(0);
+
+        insereTabela(TabelaSimb, sprintf);
+
+        Dado rand = new Dado();
+        rand.setIdentificador("rand");
+        rand.setCategoria("function");
+        rand.setNParametros(1);
+        rand.setTipo(indexTabela);
+        rand.setNivel(0);
+
+        insereTabela(TabelaSimb, rand);
+
+        Dado sqrt = new Dado();
+        sqrt.setIdentificador("sqrt");
+        sqrt.setCategoria("function");
+        sqrt.setNParametros(1);
+        sqrt.setTipo(indexTabela);
+        sqrt.setNivel(0);
+
+        insereTabela(TabelaSimb, sqrt);
+
+        Dado tan = new Dado();
+        tan.setIdentificador("tan");
+        tan.setCategoria("function");
+        tan.setNParametros(1);
+        tan.setTipo(indexTabela);
+        tan.setNivel(0);
+
+        insereTabela(TabelaSimb, tan);
+
+        Dado sin = new Dado();
+        sin.setIdentificador("sin");
+        sin.setCategoria("function");
+        sin.setNParametros(1);
+        sin.setTipo(indexTabela);
+        sin.setNivel(0);
+
+        insereTabela(TabelaSimb, sin);
+
+        Dado cos = new Dado();
+        cos.setIdentificador("cos");
+        cos.setCategoria("function");
+        cos.setNParametros(1);
+        cos.setTipo(indexTabela);
+        cos.setNivel(0);
+
+        insereTabela(TabelaSimb, cos);
+
+        Dado log = new Dado();
+        log.setIdentificador("log");
+        log.setCategoria("function");
+        log.setNParametros(1);
+        log.setTipo(indexTabela);
+        log.setNivel(0);
+
+        insereTabela(TabelaSimb, log);
+
+        Dado power = new Dado();
+        power.setIdentificador("power");
+        power.setCategoria("function");
+        power.setNParametros(2);
+        power.setTipo(indexTabela);
+        power.setNivel(0);
+
+        insereTabela(TabelaSimb, power);
         listaChaves.clear();
     }
 }
