@@ -363,7 +363,7 @@ void Enumval() : {}
         flagCategoria = "";
     }
 }
-void Enumdelta() : {} { ("+" | "-" | "*" | "/")? Expression() }
+void Enumdelta() : {} { ("*" | "/")? Expression() }
 void Enumtype() :
 {
     Integer chave;
@@ -521,7 +521,7 @@ void Typedeclare() :
         nivelCorrente--;
     }
 }
-void Expression() : {} { Seqexpr()| Binexpr() }
+void Expression() : {} { Binexpr() }
 void Binexpr() : {} { Relexpr() (Binop() Relexpr())* }
 void Binop() : {} { <AND> | <OR> | <XOR> }
 void Relexpr() : {} { Concatexpr() (Relop() Concatexpr())* }
@@ -532,7 +532,7 @@ void Sumsubexpr() : {} { Multidivexpr() (Sumsub() Multidivexpr())*  }
 void Sumsub() : {} { "+" | "-" }
 void Multidivexpr() : {} { Unaryexpr() (Multidiv() Unaryexpr())* }
 void Multidiv() : {} { "*" | "/" }
-void Unaryexpr(): {} { Lastexpr() (LOOKAHEAD(2) Unaryop() Lastexpr())? }
+void Unaryexpr(): {} { (Unaryop())? Lastexpr() }
 void Unaryop() : {} { <NOT> | "-" | "+" }
 void Lastexpr() :
 {
@@ -544,6 +544,8 @@ void Lastexpr() :
     Stringlit()
     |
     <BIN>
+    |
+    Seqexpr()
     |
     "("Expression()")"
     |
@@ -576,7 +578,7 @@ void Varexp() :
     }
 }
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
-void Seqexpr() : {} { "{" ( <DOLAR> | Objexpr() (LOOKAHEAD(2) "," Objexpr())* ("," <DOLAR>)? )? "}" }
+void Seqexpr() : {} { "{" (Expression() (("," Expression())+ | <DOLAR>)?)? "}" }
 void Call() :
 {
     Token t;
@@ -900,6 +902,21 @@ void initBuiltins(): {}
 
         insereTabela(TabelaSimb, integer);
 
+        Dado sequence = new Dado();
+        sequence.setIdentificador("sequence");
+        sequence.setCategoria("type");
+        sequence.setTipo(indexTabela);
+        sequence.setNivel(0);
+
+        insereTabela(TabelaSimb, sequence);
+
+        Dado object = new Dado();
+        object.setIdentificador("object");
+        object.setCategoria("type");
+        object.setTipo(indexTabela);
+        object.setNivel(0);
+
+        insereTabela(TabelaSimb, object);
         //?
         Dado question = new Dado();
         question.setIdentificador("?");
@@ -1035,6 +1052,7 @@ void initBuiltins(): {}
         power.setNivel(0);
 
         insereTabela(TabelaSimb, power);
+
         listaChaves.clear();
     }
 }
