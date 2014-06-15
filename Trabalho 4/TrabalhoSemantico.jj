@@ -20,10 +20,10 @@ static Token valor = null;
             TrabalhoSemantico t = new TrabalhoSemantico(new java.io.FileInputStream(args[0]));
             t.initBuiltins();
             t.Start();
-            System.out.println("============= SIMB ===============");
-            imprimeTabela(TabelaSimb);
-            System.out.println("============= AUX ================");
-            imprimeTabela(TabelaAux);
+//            System.out.println("-----------------------------------SIMB----------------------------------");
+//            imprimeTabela(TabelaSimb);
+//            System.out.println("-----------------------------------AUX-----------------------------------");
+//            imprimeTabela(TabelaAux);
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -214,7 +214,6 @@ void Ifstmt() : {}
     (LOOKAHEAD(2) Elsif())* ( Else())?
     <END> <IF>
     {
-        imprimeTabela(TabelaAux);
         removeNivel(TabelaAux, flagBranchStmt);
         listaChaves.clear();
         flagBranchStmt--;
@@ -287,39 +286,7 @@ void Vardeclare() :
 {
     t = <IDENTIFIER> Identlist()
     {
-        if(flagBranchStmt == 0)
-            atualizaCategoria(TabelaSimb, "var");//t.toString());
-        else
-            atualizaCategoria(TabelaAux, "var");//t.toString());
-
-        Hashtable <Integer, Dado> tabela = TabelaSimb;
-        Integer chave = buscaTipo(TabelaSimb, t.toString());
-
-        if(chave == -1) {
-            tabela = TabelaAux;
-            chave = buscaTipo(tabela, t.toString());
-        }
-
-        if(chave > -1) {
-            Dado builtin = tabela.get(chave);
-            if(flagBranchStmt == 0) {
-                atualizaTipo(TabelaSimb, chave);
-                atualizaNBytes(TabelaSimb, builtin.getNBytes());
-            }
-            else {
-                atualizaTipo(TabelaAux, chave);
-                atualizaNBytes(TabelaAux, builtin.getNBytes());
-            }
-        }
-        else {
-            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
-
-            if(flagBranchStmt == 0)
-                removeChaves(TabelaSimb, listaChaves);
-            else
-                removeChaves(TabelaAux, listaChaves);
-        }
-        listaChaves.clear();
+        atualizaVariavel(t, "var");
     }
 }
 
@@ -414,6 +381,7 @@ void Enumtype() :
             dado.setNivel(nivelCorrente);
             dado.setCategoria("type");
             dado.setTipo(chave);
+
             if(flagBranchStmt == 0)
                 insereTabela(TabelaSimb, dado);
             else
@@ -426,36 +394,7 @@ void Enumtype() :
     }
     Identlist()
     {
-        Hashtable <Integer, Dado> tabela = TabelaSimb;
-        chave = buscaTipo(TabelaSimb, t.toString());
-
-        if(chave == -1) {
-            tabela = TabelaAux;
-            chave = buscaTipo(tabela, t.toString());
-        }
-
-        if(chave > -1) {
-            Dado builtin = tabela.get(chave);
-            if(flagBranchStmt == 0) {
-                atualizaTipo(TabelaSimb, chave);
-                atualizaNBytes(TabelaSimb, builtin.getNBytes());
-                atualizaCategoria(TabelaSimb, "constant");
-            }
-            else {
-                atualizaTipo(TabelaAux, chave);
-                atualizaNBytes(TabelaAux, builtin.getNBytes());
-                atualizaCategoria(TabelaAux, "constant");
-            }
-        }
-        else {
-            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
-
-            if(flagBranchStmt == 0)
-                removeChaves(TabelaSimb, listaChaves);
-            else
-                removeChaves(TabelaAux, listaChaves);
-        }
-        listaChaves.clear();
+        atualizaVariavel(t, "constant");
     }
     <END> <TYPE>
 }
@@ -608,13 +547,7 @@ void Lastexpr() :
     |
     t = <IDENTIFIER> (Variable() | Callf())?
     {
-        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
-            int i = 0;
-            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
-
-            if(i == 0)
-                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
-        }
+        naoDeclaradoFluxo(t);
     }
 }
 void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
@@ -625,13 +558,7 @@ void Varexp() :
 {
     t = <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
     {
-        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
-            int i = 0;
-            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
-
-            if(i == 0)
-                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
-        }
+        naoDeclaradoFluxo(t);
     }
 }
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
@@ -662,6 +589,19 @@ boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String IdProcurado, Intege
         }
         /* pode ser adicionado futuramente na tabela */
         return true;
+    }
+}
+
+void naoDeclaradoFluxo(Token t) : {}
+{
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
+            int i = 0;
+            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+
+            if(i == 0)
+                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+        }
     }
 }
 
@@ -707,16 +647,17 @@ void imprimeTabela(Hashtable<Integer, Dado> tabela) :
 {
     {
 
-        System.out.println("");
-        System.out.println("id Ident Nivel Categ Tipo End NBytes Valor ClassT NParam");
-        System.out.println("--------------------------------------------------------");
+        System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n", "ID", "IDENT", "NIVEL", "CATEGORIA", "TIPO", "END", "NBYTE", "VALOR", "CLASST", "NPARAM");
+        System.out.println("-------------------------------------------------------------------------");
         while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
             dado = tabela.get(chave);
 
-            System.out.print(chave + ") " + dado.getIdentificador() + " " + dado.getNivel() + " " + dado.getCategoria() + " " + dado.getTipo());
-            System.out.print(" " + dado.getEndereco() + " " + dado.getNBytes() + " " + dado.getValor() + " ");
-            System.out.print(dado.getClasseTransf() + " " + dado.getNParametros() + "\n");
+            System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n",
+                              chave, dado.getIdentificador(), dado.getNivel(),
+                              dado.getCategoria(), dado.getTipo(), dado.getEndereco(),
+                              dado.getNBytes(), dado.getValor(), dado.getClasseTransf(),
+                              dado.getNParametros());
         }
 
         System.out.println("");
@@ -799,8 +740,7 @@ void removeNivel(Hashtable<Integer, Dado> tabela, Integer nivel) :
     }
 }
 
-void removeChaves(Hashtable<Integer, Dado> tabela, ArrayList<Integer> chaves) :
-{}
+void removeChaves(Hashtable<Integer, Dado> tabela, ArrayList<Integer> chaves) : {}
 {
     {
         for(Integer chave : chaves) {
@@ -809,6 +749,41 @@ void removeChaves(Hashtable<Integer, Dado> tabela, ArrayList<Integer> chaves) :
     }
 }
 
+void atualizaVariavel(Token t, String Categoria) : {}
+{
+    {
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
+
+        if(chave > -1) {
+            Dado builtin = tabela.get(chave);
+            if(flagBranchStmt == 0) {
+                atualizaTipo(TabelaSimb, chave);
+                atualizaNBytes(TabelaSimb, builtin.getNBytes());
+                atualizaCategoria(TabelaSimb, Categoria);
+            }
+            else {
+                atualizaTipo(TabelaAux, chave);
+                atualizaNBytes(TabelaAux, builtin.getNBytes());
+                atualizaCategoria(TabelaAux, Categoria);
+            }
+        }
+        else {
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+
+            if(flagBranchStmt == 0)
+                removeChaves(TabelaSimb, listaChaves);
+            else
+                removeChaves(TabelaAux, listaChaves);
+        }
+        listaChaves.clear();
+    }
+}
 
 void initBuiltins(): {}
 {
