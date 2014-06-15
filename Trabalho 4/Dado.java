@@ -24,13 +24,20 @@ public class Dado {
     /* existe na categoria: parametro */
     private String classeTransf;
 
+    /* Array de argumentos de uma função */
+    private ArrayList<Dado> args;
+
 
     public Dado(String identificador, Integer nivel) {
         this.identificador = identificador;
         this.nivel = nivel;
+        this.args = new ArrayList<Dado>();
     }
 
-    public Dado() {}
+    public Dado()
+    {
+        this.args = new ArrayList<Dado>();
+    }
 
     public String getCategoria() {
         return categoria;
@@ -68,6 +75,14 @@ public class Dado {
         return nbytes;
     }
 
+    public Dado getArgs(Integer chave) {
+        return this.args.get(chave);
+    }
+
+    public ArrayList<Dado> getArgs() {
+        return this.args;
+    }
+
     public void setNBytes(Integer nbytes) {
         this.nbytes = nbytes;
     }
@@ -102,6 +117,10 @@ public class Dado {
 
     public void setValor(String valor) {
         this.valor = valor;
+    }
+
+    public void setArgs(Dado valor) {
+        this.args.add(valor);
     }
 }
 

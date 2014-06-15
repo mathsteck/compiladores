@@ -8,11 +8,11 @@ static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
 static Hashtable<Integer, Dado> TabelaAux = new Hashtable<Integer, Dado>();
 static Integer indexTabela = 0;
 static Integer nivelCorrente = 0;
-static String flagCategoria = "";
 static Integer flagBranchStmt = 0;
 static Integer nReturn = 0, procedureReturn = 0;
 static Integer countArgs = 0;
 static Dado dado = new Dado();
+static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
 
@@ -42,7 +42,7 @@ SKIP: {" "|"\r"|"\n"|"\t"}
 SKIP: {"/*" : BLOCKCOMMENT}
 <BLOCKCOMMENT> SKIP:{"*/" : DEFAULT}
 <BLOCKCOMMENT> MORE:{<~[]>}
-SKIP: { <LINECOMMENT: "--" (~["\n"])* ("\n"|"\r"|"\r\n")>}
+SKIP: { <LINECOMMENT: "--" (~["\n"])*>}
 
 /* Palavras reservadas*/
 TOKEN: { <ELSE: "else"> }
@@ -420,6 +420,12 @@ void Procdeclare() :
     "(" (Paramlist())? ")" (Block())?
     {
         dado.setNParametros(listaChaves.size());
+        // Adiciona os parametros em uma lista para recuperar depois na checagem de tipos
+        if(listaChaves.size() > 0) {
+            for(Integer key : listaChaves) {
+                dado.setArgs(TabelaSimb.get(key));
+            }
+        }
     }
     <END> <PROCEDURE>
     {
@@ -478,6 +484,12 @@ void Funcdeclare() :
     "("(Paramlist())?")"
     {
         dado.setNParametros(listaChaves.size());
+        // Adiciona os parametros em uma lista para recuperar depois na checagem de tipos
+        if(listaChaves.size() > 0) {
+            for(Integer key : listaChaves) {
+                dado.setArgs(TabelaSimb.get(key));
+            }
+        }
     }
     (Block())?
     <END> <FUNCTION>
@@ -740,7 +752,7 @@ void imprimeTabela(Hashtable<Integer, Dado> tabela) :
     {
 
         System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n", "ID", "IDENT", "NIVEL", "CATEGORIA", "TIPO", "END", "NBYTE", "VALOR", "CLASST", "NPARAM");
-        System.out.println("-------------------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------------");
         while(elemento.hasMoreElements()) {
             chave = (Integer) elemento.nextElement();
             dado = tabela.get(chave);
@@ -750,6 +762,19 @@ void imprimeTabela(Hashtable<Integer, Dado> tabela) :
                               dado.getCategoria(), dado.getTipo(), dado.getEndereco(),
                               dado.getNBytes(), dado.getValor(), dado.getClasseTransf(),
                               dado.getNParametros());
+            if(dado.getArgs().size() > 0) {
+                System.out.println("---------------------------ARG LIST---------------------------------------------");
+            }
+            for(Dado param : dado.getArgs())
+                System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n",
+                                  chave, param.getIdentificador(), param.getNivel(),
+                                  param.getCategoria(), param.getTipo(), param.getEndereco(),
+                                  param.getNBytes(), param.getValor(), param.getClasseTransf(),
+                                  param.getNParametros());
+
+            if(dado.getArgs().size() > 0) {
+                System.out.println("-----------------------FIM ARG LIST---------------------------------------------");
+            }
         }
 
         System.out.println("");
