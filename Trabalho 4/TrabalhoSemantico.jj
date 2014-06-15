@@ -417,7 +417,7 @@ void Procdeclare() :
         listaChaves.clear();
         nivelCorrente++;
     }
-    "(" (Paramlist())? ")" (Block())?
+    "(" (Paramlist())? ")"
     {
         dado.setNParametros(listaChaves.size());
         // Adiciona os parametros em uma lista para recuperar depois na checagem de tipos
@@ -427,6 +427,7 @@ void Procdeclare() :
             }
         }
     }
+    (Block())?
     <END> <PROCEDURE>
     {
         if(procedureReturn > 0)
