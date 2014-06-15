@@ -319,7 +319,7 @@ void Ident() :
                 insereTabela(TabelaAux, tmp);
             }
             else {
-                System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" já declarado");
+                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" já declarado");
             }
         }
     }

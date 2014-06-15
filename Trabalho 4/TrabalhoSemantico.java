@@ -1009,7 +1009,7 @@ static Token valor = null;
                 insereTabela(TabelaAux, tmp);
             }
             else {
-                System.out.println("Erro! Identificador \u005c"" + dado.getIdentificador() +  "\u005c" j\u00e1 declarado");
+                System.out.println("Erro! Identificador \u005c"" + tmp.getIdentificador() +  "\u005c" j\u00e1 declarado");
             }
         }
   }
