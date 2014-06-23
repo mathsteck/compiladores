@@ -116,7 +116,7 @@ TOKEN:
 }
 TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" | <FUNCBUILT> > }
 TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
-TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }     
+TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }
 TOKEN: { <ATOMBINARY: "0b"(<DIGITBIN>)+> }
 TOKEN: { <ATOMOCTAL: "0t"(<DIGITBIN>)+> }
 TOKEN: { <ATOMDECIMAL: "0d"(<DIGITBIN>)+> }
@@ -151,12 +151,11 @@ void Breakstmt() : {} { <BREAK> (Stringlit() | Atomexpr())? }
 void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
 void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
 void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
-void Stringlit() : {}
+String Stringlit() : {}
 {
     <STRING>
     {
-        if(tipo != null && !tipo.toString().equals("object"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "object";
     }
 }
 void Forstmt() : {}
@@ -180,7 +179,7 @@ void Foridx() :
 } 
 {     t = <IDENTIFIER> 
     {
-        naoDeclaradoFluxo(t);    
+        naoDeclaradoFluxo(t);
     }
     "=" Expression() <TO> Expression() ( <BY> Expression())? 
 }
@@ -325,9 +324,14 @@ void Identlist() : {}{ Ident() ("," Ident())* }
 void Ident() :
 {
     Token t;
+    String tipo1 = "";
 }
 {
-    t = <IDENTIFIER> ("=" Expression())?
+    t = <IDENTIFIER>
+    ("=" tipo1 = Expression()
+    {
+        erroTipo(tipo.toString(), tipo1, t.toString());
+    })?
     {
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
@@ -574,36 +578,213 @@ void Typedeclare() :
         nivelCorrente--;
     }
 }
-void Expression() : {} { Binexpr() }
-void Binexpr() : {} { Relexpr() (Binop() Relexpr())* }
-void Binop() : {} { <AND> | <OR> | <XOR> }
-void Relexpr() : {} { Concatexpr() (Relop() Concatexpr())* }
-void Relop() : {} { "<" | ">" | "<=" | ">=" |"="| "!=" }
-void Concatexpr() : {} { Sumsubexpr() (Concat() Sumsubexpr())* }
-void Concat() : {} { "&" }
-void Sumsubexpr() : {} { Multidivexpr() (Sumsub() Multidivexpr())*  }
-void Sumsub() : {} { "+" | "-" }
-void Multidivexpr() : {} { Unaryexpr() (Multidiv() Unaryexpr())* }
-void Multidiv() : {} { "*" | "/" }
-void Unaryexpr(): {} { (Unaryop())? Lastexpr() }
-void Unaryop() : {} { <NOT> | "-" | "+" }
-void Lastexpr() :
+String Expression() :
+{
+    String t;
+}
+{
+    t = Binexpr()
+    {
+        return t;
+    }
+}
+String Binexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Relexpr()
+    (operacao = Binop() tipo2 = Relexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Binop() :
 {
     Token t;
 }
 {
-    Atomexpr()
+    t = <AND> | t = <OR> | t = <XOR>
+    {
+        return t.toString();
+    }
+}
+String Relexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Concatexpr()
+    (operacao = Relop() tipo2 = Concatexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Relop() :
+{
+    Token t;
+}
+{
+    t = "<" | t = ">" | t = "<=" | t = ">=" | t = "="| t = "!="
+    {
+        return t.toString();
+    }
+}
+String Concatexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Sumsubexpr()
+    (operacao = Concat() tipo2 = Sumsubexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Concat() :
+{
+    Token t;
+}
+{
+    t = "&"
+    {
+        return t.toString();
+    }
+}
+String Sumsubexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Multidivexpr()
+    (operacao = Sumsub()
+    tipo2 = Multidivexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Sumsub() :
+{
+    Token t;
+}
+{
+    t = "+"
+    {
+        return t.toString();
+    }
     |
-    Stringlit()
+    t = "-"
+    {
+        return t.toString();
+    }
+}
+String Multidivexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Unaryexpr()
+    (operacao = Multidiv() tipo2 = Unaryexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Multidiv() :
+{
+    Token t;
+}
+{
+    t = "*" | t = "/"
+    {
+        return t.toString();
+    }
+}
+String Unaryexpr():
+{
+    String tipo1 = "", operacao = "";
+}
+{
+    (operacao = Unaryop())?
+    tipo1 = Lastexpr()
+    {
+        return tipo1;
+    }
+}
+String Unaryop() :
+{
+    Token t;
+}
+{
+    t = <NOT> | t = "-" | t = "+"
+    {
+        return t.toString();
+    }
+}
+String Lastexpr() :
+{
+    Token t;
+    String s;
+}
+{
+    s = Atomexpr()
+    {
+        return s;
+    }
+    |
+    s = Stringlit()
+    {
+        return s;
+    }
     |
     <BIN>
+    {
+        return "";
+    }
     |
     Seqexpr()
+    {
+        return "";
+    }
     |
     "("Expression()")"
+    {
+        return "";
+    }
     |
     t = <IDENTIFIER>
-    (Variable() | Callf(t)
+    {
+        Integer chave = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente).getTipo();
+
+        if(chave > -1)
+            return TabelaSimb.get(chave).getIdentificador();
+        return "";
+    }
+    (Variable()
+    {
+        return "";
+    }
+    |
+    Callf(t)
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
             System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
@@ -616,9 +797,11 @@ void Lastexpr() :
             System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
             erro_s++;
         }
+        return "";
     })?
     {
         naoDeclaradoFluxo(t);
+        return "";
     }
 }
 void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
@@ -687,42 +870,36 @@ void Objexpr() : {}
             System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
     }
 }
-void Atomexpr() : {}
+String Atomexpr() : {}
 {
     <ATOMINTEGER>
     {
-        if(tipo != null && !tipo.toString().equals("integer") && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "integer";
     }
     |
     <ATOMREAL>
     {
-        if(tipo != null && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "atom";
     }
     |
     <ATOMBINARY>
     {
-        if(tipo != null && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "atom";
     }
     |
     <ATOMOCTAL>
     {
-        if(tipo != null && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "atom";
     }
     |
     <ATOMDECIMAL>
     {
-        if(tipo != null && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "atom";
     }
     |
     <ATOMHEXADECIMAL>
     {
-        if(tipo != null && !tipo.toString().equals("atom"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+        return "atom";
     }
 }
 
@@ -795,6 +972,25 @@ Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identificador) :
                 return chave;
         }
         return -1;
+    }
+}
+
+Dado buscaIdentificador(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == Nivel)
+                return dado;
+        }
+        return null;
     }
 }
 
@@ -995,6 +1191,58 @@ void atualizaVariavel(Token t, String Categoria) : {}
                 removeChaves(TabelaAux, listaChaves);
         }
         listaChaves.clear();
+    }
+}
+
+String comparaTipos(String tipo1, String operacao, String tipo2) : {}
+{
+    {
+        if(operacao.equals("+") || operacao.equals("-")){
+            if(tipo1.equals("integer") && tipo2.equals("integer"))
+                return "integer";
+
+            if(tipo1.equals("atom") && tipo2.equals("atom"))
+                return "atom";
+
+            if(tipo1.equals("object") && tipo2.equals("object"))
+                return "object";
+
+            if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
+                return "atom";
+
+            if((tipo1.equals("object") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
+                return "object";
+
+        }
+        return "";
+        /*if(operacao.equals()){
+        }
+        if(operacao.equals()){
+        }
+        if(operacao.equals()){
+        }
+        if(operacao.equals()){
+        }*/
+    }
+}
+
+void erroTipo(String tipo_esq, String tipo_dir, String variavel) : {}
+{
+    {
+        if(!tipo_esq.equals(tipo_dir)) {
+            if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+            else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+            else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+        }
     }
 }
 
