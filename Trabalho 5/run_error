@@ -1,0 +1,7 @@
+javacc TrabalhoSemantico.jj
+javac *.java
+for file in tests/error_tests/*.epy; do
+    echo "Testing ${file##*/} ..."
+    java TrabalhoSemantico tests/error_tests/${file##*/}
+    echo
+done

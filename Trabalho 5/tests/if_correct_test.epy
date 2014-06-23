@@ -1,0 +1,15 @@
+integer a, b
+integer z, w
+
+if a < b then
+	integer x, y
+	x = 1
+	y = 5
+elsif a > b then
+ 	z = 8
+ 	w = 10
+else
+	integer x, y
+	x = 1
+	y = 5
+end if

@@ -1,0 +1,12 @@
+integer a,b,c,x,i
+for i = a to b do
+	integer d
+	while c > i do
+		d = c
+		if a < c then
+			x = 1
+		else
+			x = 2
+ 		end if
+	end while
+end for

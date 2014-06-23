@@ -1,0 +1,15 @@
+integer a
+integer b
+sequence x = {1, 2, 3}
+
+foreach chave (x) do --ERRO(chave nao declarada)
+    integer d
+end foreach
+d = 0 --ERRO(d nao declarado)
+
+b = chave --ERRO(chave nao declarada)
+
+integer chave
+foreach chave (s) do --ERRO(s nao declarada)
+    chave = a + chave
+end foreach

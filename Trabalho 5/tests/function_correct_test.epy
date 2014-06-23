@@ -1,0 +1,22 @@
+function bar1(atom n)
+	n=2
+	return n
+end function
+
+
+function bar2(atom n, integer m, object o, sequence s)
+	atom a,b
+	a = 2
+	b = a
+	n = m
+	o = s
+	return n
+end function
+
+atom n
+integer m
+object o
+sequence s
+
+bar2(n, m,  o, s)
+n = bar1(n)

@@ -1,0 +1,86 @@
+Java Compiler Compiler Version 5.0 (Parser Generator)
+(type "javacc" with no arguments for help)
+Reading from file TrabalhoSemantico.jj . . .
+File "TokenMgrError.java" is being rebuilt.
+File "ParseException.java" is being rebuilt.
+File "Token.java" is being rebuilt.
+File "SimpleCharStream.java" is being rebuilt.
+Parser generated successfully.
+Testing atom_error_test.epy ...
+Erro! Identificador "a" já declarado no nível atual
+Erro! Variável "b" não declarada no nivel atual!
+Foram encontrados 2 erros
+
+Testing foreach_error_test.epy ...
+Erro! Variável "chave" não declarada no nivel atual!
+Erro! Variável "d" não declarada no nivel atual!
+Erro! Variável "chave" não declarada no nivel atual!
+Erro! Variável "s" não declarada no nivel atual!
+Foram encontrados 4 erros
+
+Testing for_error_test.epy ...
+Erro! Variável "i" não declarada no nivel atual!
+Erro! Variável "i" não declarada no nivel atual!
+Erro! Variável "i" não declarada no nivel atual!
+Erro! Variável "f" não declarada no nivel atual!
+Erro! Variável "d" não declarada no nivel atual!
+Foram encontrados 5 erros
+
+Testing for_if_while_error_test.epy ...
+Erro! Variável "i" não declarada no nivel atual!
+Erro! Variável "a" não declarada no nivel atual!
+Erro! Variável "b" não declarada no nivel atual!
+Erro! Variável "c" não declarada no nivel atual!
+Erro! Variável "i" não declarada no nivel atual!
+Erro! Variável "c" não declarada no nivel atual!
+Erro! Variável "a" não declarada no nivel atual!
+Erro! Variável "c" não declarada no nivel atual!
+Erro! Variável "x" não declarada no nivel atual!
+Erro! Variável "z" não declarada no nivel atual!
+Erro! Variável "d" não declarada no nivel atual!
+Foram encontrados 11 erros
+
+Testing function_error_test.epy ...
+Erro! Identificador "n" já declarado no nível atual
+Erro! Variável "z" não declarada no nivel atual!
+Erro! Variável "e" não declarada no nivel atual!
+Erro! Variável "bla" não declarada no nivel atual!
+Erro! Function precisa de retorno!
+Erro! Function precisa de retorno!
+Erro! bar esperava 4 argumentos mas recebeu 2 .
+Foram encontrados 7 erros
+
+Testing if_error_test.epy ...
+Erro! Variável "b" não declarada no nivel atual!
+Erro! Variável "b" não declarada no nivel atual!
+Erro! Variável "x" não declarada no nivel atual!
+Erro! Variável "y" não declarada no nivel atual!
+Foram encontrados 4 erros
+
+Testing procedure_error_test.epy ...
+Erro! Identificador "n" já declarado no nível atual
+Erro! Variável "z" não declarada no nivel atual!
+Erro! Variável "e" não declarada no nivel atual!
+Erro! bar esperava 4 argumentos mas recebeu 2 .
+Foram encontrados 4 erros
+
+Testing sequence_error_test.epy ...
+Erro! Identificador "s" já declarado no nível atual
+Foram encontrados 1 erros
+
+Testing switch_error_test.epy ...
+Erro! Variável "x" não declarada no nivel atual!
+Erro! Variável "a" não declarada no nivel atual!
+Erro! Variável "b" não declarada no nivel atual!
+Erro! Variável "c" não declarada no nivel atual!
+Erro! Identificador "d" já declarado
+Erro! Identificador "z" já declarado no nível atual
+Erro! Variável "z" não declarada no nivel atual!
+Foram encontrados 7 erros
+
+Testing while_error_test.epy ...
+Erro! Variável "x" não declarada no nivel atual!
+Erro! Variável "x" não declarada no nivel atual!
+Erro! Variável "z" não declarada no nivel atual!
+Foram encontrados 3 erros
+

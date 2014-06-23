@@ -1,0 +1,25 @@
+integer x
+
+while x > 0 do
+	integer z
+	z = x
+	x = x - 1
+end while
+
+while x > 0 do
+	object z
+	z = x
+	x = x - 1
+end while
+
+while x > 0 do
+	atom z
+	z = x
+	x = x - 1
+end while
+
+while x > 0 do
+	sequence z
+	z = {}
+	x = x - 1
+end while

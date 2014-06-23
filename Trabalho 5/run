@@ -1,0 +1,7 @@
+javacc TrabalhoTipo.jj
+javac *.java
+for file in tests/correct_tests/*.epy; do
+    echo "Testing ${file##*/} ..."
+    java TrabalhoTipo tests/correct_tests/${file##*/}
+    echo
+done

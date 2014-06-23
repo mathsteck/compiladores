@@ -1,0 +1,17 @@
+integer a,b,c
+for i = a to b do
+	integer d
+	for i = a to b do
+		d = 2
+		integer f
+		for i = a to b do
+			integer f --ERROR (ja declarado)
+			f = 2
+			d = 3
+		end for
+		f = 2
+	end for
+	f=3 --ERROR (nao declarada)
+	c = 10
+end for
+d=10 --ERROR não declarada

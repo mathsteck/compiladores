@@ -1,0 +1,16 @@
+enum type RGB RED, GREEN, BLUE end type
+
+RGB x
+x = GREEN
+
+integer a, c
+if x = RED then
+    integer b, d = 5
+    enum type MONTH JANEIRO, FEVEREIRO end type
+    MONTH y = JANEIRO
+end if
+
+enum ONE, TWO, THREE
+
+a = ONE
+c = THREE
