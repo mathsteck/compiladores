@@ -15,6 +15,7 @@ static Dado dado = new Dado();
 static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null;
+static Integer erro_s = 0;
 
     public static void main(String[] args){
         try{
@@ -25,6 +26,10 @@ static Token valor = null;
 //            imprimeTabela(TabelaSimb);
 //            System.out.println("-----------------------------------AUX-----------------------------------");
 //            imprimeTabela(TabelaAux);
+			if(erro_s == 0)
+				System.out.println("SUCESSO");
+			else
+				System.out.println("Foram encontrados " + erro_s + " erros");
         } catch (java.io.FileNotFoundException ex) {
             System.out.println("Arquivo " + args[0] + " nao foi encontrado");
         } catch (ParseException ex) {
@@ -163,11 +168,23 @@ void Forstmt() : {}
         flagBranchStmt--;
     }
 }
-void Foridx() : {} { <IDENTIFIER> "=" Expression() <TO> Expression() ( <BY> Expression())? }
-void Foreachstmt() : {}
+void Foridx() : 
+{
+	Token t;
+} 
+{ 	t = <IDENTIFIER> 
+	{
+		naoDeclaradoFluxo(t);	
+	}
+	"=" Expression() <TO> Expression() ( <BY> Expression())? 
+}
+void Foreachstmt() : 
+{
+	Token t;
+}
 {
     <FOREACH>
-    (<IDENTIFIER>)? "(" ( <IDENTIFIER> | Seqexpr() ) ")" (Labelstmt())? <DO>
+    (t = <IDENTIFIER> {naoDeclaradoFluxo(t);})? "(" ( t = <IDENTIFIER> {naoDeclaradoFluxo(t);} | Seqexpr() ) ")" (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
@@ -320,6 +337,7 @@ void Ident() :
             }
             else {
                 System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" já declarado");
+				erro_s++;
             }
         }
     }
@@ -391,6 +409,7 @@ void Enumtype() :
         }
         else {
             System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+			erro_s++;
         }
         listaChaves.clear();
     }
@@ -430,8 +449,10 @@ void Procdeclare() :
     (Block())?
     <END> <PROCEDURE>
     {
-        if(procedureReturn > 0)
+        if(procedureReturn > 0){
             System.out.println("Erro! Procedure não pode ter return!!");
+			erro_s++;
+		}
 
         procedureReturn = 0;
         removeNivel(TabelaSimb, nivelCorrente);
@@ -461,6 +482,7 @@ void Parameter() :
         }
         else {
             System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+			erro_s++;
         }
     }
 }
@@ -496,8 +518,10 @@ void Funcdeclare() :
     <END> <FUNCTION>
     {
 
-        if(nReturn < 1)
+        if(nReturn < 1){
             System.out.println("Erro! Function precisa de retorno!");
+			erro_s++;
+		}
         nReturn = 0;
         removeNivel(TabelaSimb, nivelCorrente);
         listaChaves.clear();
@@ -525,8 +549,10 @@ void Typedeclare() :
     "(" Parameter() ")" (Block())?
     <END> <TYPE>
     {
-        if(nReturn < 1)
+        if(nReturn < 1){
             System.out.println("Erro! Type precisa de retorno!");
+			erro_s++;
+		}
         nReturn = 0;
 
         removeNivel(TabelaSimb, nivelCorrente);
@@ -567,12 +593,14 @@ void Lastexpr() :
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
             System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+			erro_s++;
         }
 
         String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
 
         if(Categoria != null && !Categoria.equals("function")) {
             System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
+			erro_s++;
         }
     })?
     {
@@ -601,15 +629,16 @@ void Call() :
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
             System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+			erro_s++;
         }
     }
     "(" (Arglist())? ")"
     {
         Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
 
-        if(nParam != countArgs)
-        {
+        if(nParam != countArgs){
             System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+			erro_s++;
         }
         countArgs = 0;
     }
@@ -620,9 +649,9 @@ void Callf(Token t) : {}
     {
         Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
 
-        if(nParam != countArgs)
-        {
+        if(nParam != countArgs){
             System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+			erro_s++;
         }
         countArgs = 0;
     }
@@ -665,8 +694,10 @@ void naoDeclaradoFluxo(Token t) : {}
             int i = 0;
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
-            if(i == 0)
+            if(i == 0){
                 System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+				erro_s++;
+			}
         }
     }
 }
@@ -681,6 +712,7 @@ void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
         }
         else {
             System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" já declarado no nível atual");
+			erro_s++;
         }
     }
 }
@@ -893,6 +925,7 @@ void atualizaVariavel(Token t, String Categoria) : {}
         }
         else {
             System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+			erro_s++;
 
             if(flagBranchStmt == 0)
                 removeChaves(TabelaSimb, listaChaves);
