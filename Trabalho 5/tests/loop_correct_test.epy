@@ -1,9 +1,0 @@
-integer a
-integer x
-
-loop do
-	integer z = 3
-	a = a * 2
-	x = z - 1
-	until x<=0
-end loop

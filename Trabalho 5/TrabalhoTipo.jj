@@ -14,7 +14,7 @@ static Integer countArgs = 0;
 static Dado dado = new Dado();
 static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
-static Token valor = null;
+static Token valor = null, tipo = null;
 static Integer erro_s = 0;
 
     public static void main(String[] args){
@@ -107,13 +107,12 @@ TOKEN: { <#CHAR: ( <SYMBOL> | <ALPHA> | <DIGITDEC>  ) > }
 TOKEN: { <#ESCCHAR: ["\0"-"\b"] | ["\f"-"\r"]> }
 TOKEN:
 {
-    <STRING: (("\""( "\\n" | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
-              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"" | "\'"( "\\n" | <CHAR>
-              | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
-              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'" | "\"\"\"" ("\\n"
-              | <CHAR> | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>
-              | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\"")) | ("b\""(<DIGITBIN>
-              | " " | <USCORE>)+ "\"") | ("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") >
+    <STRING:
+        (("\""( "\\n" | <CHAR> | " " | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\""
+        | "\'"( "\\n" | <CHAR> | " " | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>| "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'"
+        | "\"\"\"" ("\\n"| <CHAR> | " " | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>| "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\""))
+        | ("b\""(<DIGITBIN> | " " | <USCORE>)+ "\"")
+        |("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") >
 }
 TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" | <FUNCBUILT> > }
 TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
@@ -152,7 +151,14 @@ void Breakstmt() : {} { <BREAK> (Stringlit() | Atomexpr())? }
 void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
 void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
 void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
-void Stringlit() : {} { <STRING> }
+void Stringlit() : {}
+{
+    <STRING>
+    {
+        if(tipo != null && !tipo.toString().equals("object"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+}
 void Forstmt() : {}
 {
     <FOR> Foridx()
@@ -303,8 +309,13 @@ void Vardeclare() :
     Token t;
 }
 {
-    t = <IDENTIFIER> Identlist()
+    t = <IDENTIFIER>
     {
+        tipo = t;
+    }
+    Identlist()
+    {
+        tipo = null;
         atualizaVariavel(t, "var");
     }
 }
@@ -321,15 +332,18 @@ void Ident() :
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
 
+        // Verifica se é uma constante
         if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
 
+        // Se não está dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
             tmp.setNivel(nivelCorrente);
             insereTabela(TabelaSimb, tmp);
         }
+        // Se estiver, verifica na tabela auxiliar
         else {
             if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
                 tmp.setNivel(flagBranchStmt);
@@ -661,8 +675,56 @@ void Arglist() : {}
     Expression() { countArgs++; }
     ("," Expression() { countArgs++; })*
 }
-void Objexpr() : {} { Atomexpr() | Seqexpr() | <STRING> }
-void Atomexpr() : {}{ <ATOMINTEGER> | <ATOMREAL> | <ATOMBINARY> | <ATOMOCTAL> | <ATOMDECIMAL> | <ATOMHEXADECIMAL> }
+void Objexpr() : {}
+{
+    Atomexpr()
+    |
+    Seqexpr()
+    |
+    <STRING>
+    {
+        if(tipo != null && !tipo.toString().equals("object"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+}
+void Atomexpr() : {}
+{
+    <ATOMINTEGER>
+    {
+        if(tipo != null && !tipo.toString().equals("integer") && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+    |
+    <ATOMREAL>
+    {
+        if(tipo != null && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+    |
+    <ATOMBINARY>
+    {
+        if(tipo != null && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+    |
+    <ATOMOCTAL>
+    {
+        if(tipo != null && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+    |
+    <ATOMDECIMAL>
+    {
+        if(tipo != null && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+    |
+    <ATOMHEXADECIMAL>
+    {
+        if(tipo != null && !tipo.toString().equals("atom"))
+            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+    }
+}
 
 
 /* Funcoes Auxiliares */

@@ -1,4 +1,0 @@
-atom a
-atom a --ERROR (já declarado)
-b = 3 --ERROR (variavel não declarada)
-
