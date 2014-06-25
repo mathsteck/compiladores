@@ -6,7 +6,7 @@ for file in tests/correct_tests/*.epy; do
     java TrabalhoTipo tests/correct_tests/${file##*/}
     echo
 done
-echo "====================CORRECT================"
+echo "====================ERROR=================="
 for file in tests/error_tests/*.epy; do
     echo "Testing ${file##*/} ..."
     java TrabalhoTipo tests/error_tests/${file##*/}

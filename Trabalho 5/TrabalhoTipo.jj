@@ -174,15 +174,33 @@ void Forstmt() : {}
         flagBranchStmt--;
     }
 }
-void Foridx() : 
+void Foridx() :
 {
     Token t;
-} 
-{     t = <IDENTIFIER> 
+    String s, g, h = "";
+}
+{   t = <IDENTIFIER>
     {
         naoDeclaradoFluxo(t);
     }
-    "=" Expression() <TO> Expression() ( <BY> Expression())? 
+    "=" s = Expression() <TO>  g = Expression()
+    ( <BY> h = Expression()
+    {
+        if(!s.equals("atom") && !s.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo atom mas recebeu \"" + h + "\".");
+        }
+    })?
+    {
+        if(!s.equals("atom") && !s.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo atom mas recebeu \"" + s + "\".");
+        }
+        if(!g.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo atom mas recebeu \"" + g + "\".");
+        }
+    }
 }
 void Foreachstmt() : 
 {
@@ -190,7 +208,16 @@ void Foreachstmt() :
 }
 {
     <FOREACH>
-    (t = <IDENTIFIER> {naoDeclaradoFluxo(t);})? "(" ( t = <IDENTIFIER> {naoDeclaradoFluxo(t);} | Seqexpr() ) ")" (Labelstmt())? <DO>
+    (t = <IDENTIFIER>
+    {
+        naoDeclaradoFluxo(t);
+    })? "(" ( t = <IDENTIFIER>
+    {
+        // FIXME t só pode ser sequence
+        naoDeclaradoFluxo(t);
+    }
+    |
+    Seqexpr() ) ")" (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
@@ -203,10 +230,20 @@ void Foreachstmt() :
     }
 }
 void Labelstmt() : {} { <LABEL> Stringlit() }
-void Whilestmt() : {}
+void Whilestmt() :
+{
+    String t;
+}
 {
     <WHILE>
-    Expression() (Labelstmt())? <DO>
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
@@ -218,13 +255,23 @@ void Whilestmt() : {}
         flagBranchStmt--;
     }
 }
-void Loopstmt() : {}
+void Loopstmt() :
+{
+    String t;
+}
 {
     <LOOP> (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
-    Block() <UNTIL> Expression()
+    Block() <UNTIL>
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo atom mas recebeu \"" + t + "\".");
+        }
+    }
     <END> <LOOP>
     {
         removeNivel(TabelaAux, flagBranchStmt);
@@ -244,22 +291,40 @@ void Ifstmt() : {}
         flagBranchStmt--;
     }
 }
-void Iftest() : {}
+void Iftest() :
 {
-    <IF> Expression() (Labelstmt())? <THEN>
+    String t;
+}
+{
+    <IF> t = Expression() (Labelstmt())? <THEN>
     {
         flagBranchStmt++;
+
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
     }
     (Block())?
 }
-void Elsif() : {}
+void Elsif() :
+{
+    String t;
+}
 {
     <ELSIF>
     {
         removeNivel(TabelaAux, flagBranchStmt);
         listaChaves.clear();
     }
-    Expression()<THEN> ( Block())?
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    <THEN> ( Block())?
 }
 void Else() : {}
 {
@@ -281,26 +346,50 @@ void Switchstmt() : {}
         flagBranchStmt--;
     }
 }
-void Switchtest() : {}
+void Switchtest() :
 {
-    <SWITCH> Expression() (Labelstmt())? <DO>
+    String t;
+}
+{
+    <SWITCH>
+    Expression() (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
 }
 void Case() : {} { <CASE>Caselist() <THEN> (Block())? }
-void Caselist() : {} { Expression() ("," Expression())* }
+void Caselist() :
+{
+    String t;
+}
+{
+    t = Expression()
+    {
+        if(t.equals("sequence") || t.equals("object")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (","
+    t = Expression()
+    {
+        if(t.equals("sequence") || t.equals("object")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    })*
+}
 void Caseelse() : {} { <ELSE> (Block())? }
 void Assignmono() : 
 {
-	String tipo_esq, tipo_dir; 
-} 
-{ 
-	tipo_esq = Varexp() "=" tipo_dir = Expression()
-	{
-		erroTipo(tipo_esq, tipo_dir, nome_variavel);
-		nome_variavel = "";
-	}
+    String tipo_esq, tipo_dir; 
+}
+{
+    tipo_esq = Varexp() "=" tipo_dir = Expression()
+    {
+        erroTipo(tipo_esq, tipo_dir, nome_variavel);
+        nome_variavel = "";
+    }
 }
 
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
@@ -620,7 +709,12 @@ String Binop() :
     Token t;
 }
 {
-    t = <AND> | t = <OR> | t = <XOR>
+    t = <AND>
+    {
+        return t.toString();
+    }
+    |
+    t = <OR> | t = <XOR>
     {
         return t.toString();
     }
@@ -645,7 +739,32 @@ String Relop() :
     Token t;
 }
 {
-    t = "<" | t = ">" | t = "<=" | t = ">=" | t = "="| t = "!="
+    t = "<"
+    {
+        return t.toString();
+    }
+    |
+    t = ">"
+    {
+        return t.toString();
+    }
+    |
+    t = "<="
+    {
+        return t.toString();
+    }
+    |
+    t = ">="
+    {
+        return t.toString();
+    }
+    |
+    t = "="
+    {
+        return t.toString();
+    }
+    |
+    t = "!="
     {
         return t.toString();
     }
@@ -681,8 +800,7 @@ String Sumsubexpr() :
 }
 {
     tipo1 = Multidivexpr()
-    (operacao = Sumsub()
-    tipo2 = Multidivexpr()
+    (operacao = Sumsub() tipo2 = Multidivexpr()
     {
         tipo1 = comparaTipos(tipo1, operacao, tipo2);
     })*
@@ -726,7 +844,12 @@ String Multidiv() :
     Token t;
 }
 {
-    t = "*" | t = "/"
+    t = "*"
+    {
+        return t.toString();
+    }
+    |
+    t = "/"
     {
         return t.toString();
     }
@@ -747,7 +870,17 @@ String Unaryop() :
     Token t;
 }
 {
-    t = <NOT> | t = "-" | t = "+"
+    t = <NOT>
+    {
+        return t.toString();
+    }
+    |
+    t = "-"
+    {
+        return t.toString();
+    }
+    |
+    t = "+"
     {
         return t.toString();
     }
@@ -820,48 +953,48 @@ void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
 String Varexp() :
 {
     Token t;
-	Dado temp;
-	Dado dado_tipo;
-	Integer chave;
+    Dado temp;
+    Dado dado_tipo;
+    Integer chave;
 }
 {
     t = <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
     {
-		nome_variavel = t.toString();
-		// Se não está dentro de um branch (if, for, etc)
+        nome_variavel = t.toString();
+        // Se não está dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
             temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
-			if(temp != null){
-				chave = temp.getTipo();
-				dado_tipo = TabelaSimb.get(chave);
-				return dado_tipo.getIdentificador();
-			}
-			else{
-				return "";
-			}
+            if(temp != null){
+                chave = temp.getTipo();
+                dado_tipo = TabelaSimb.get(chave);
+                return dado_tipo.getIdentificador();
+            }
+            else{
+                return "";
+            }
         }
-		else{
-			if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
-				int i = 0;
-				for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
-				
-				if(i != 0){
-					temp = buscaIdentificador(TabelaAux, t.toString(), i);
-					chave = temp.getTipo();
-					dado_tipo = TabelaSimb.get(chave);
-					return dado_tipo.getIdentificador();
-				}
-				else{
-					return "";
-				}
-			}
-			else{
-				temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
-				chave = temp.getTipo();
-				dado_tipo = TabelaSimb.get(chave);
-				return dado_tipo.getIdentificador();
-			}
-		}
+        else{
+            if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
+                int i = 0;
+                for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+
+                if(i != 0){
+                    temp = buscaIdentificador(TabelaAux, t.toString(), i);
+                    chave = temp.getTipo();
+                    dado_tipo = TabelaSimb.get(chave);
+                    return dado_tipo.getIdentificador();
+                }
+                else{
+                    return "";
+                }
+            }
+            else{
+                temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+                chave = temp.getTipo();
+                dado_tipo = TabelaSimb.get(chave);
+                return dado_tipo.getIdentificador();
+            }
+        }
         naoDeclaradoFluxo(t);
     }
 }
@@ -1246,7 +1379,7 @@ void atualizaVariavel(Token t, String Categoria) : {}
 String comparaTipos(String tipo1, String operacao, String tipo2) : {}
 {
     {
-        if(operacao.equals("+") || operacao.equals("-")){
+        if(operacao.equals("+") || operacao.equals("-") || operacao.equals("*")){
             if(tipo1.equals("integer") && tipo2.equals("integer"))
                 return "integer";
 
@@ -1255,8 +1388,8 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
 
             if(tipo1.equals("object") && tipo2.equals("object"))
                 return "object";
-				
-			if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
                 return "sequence";
 
             if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
@@ -1267,22 +1400,58 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
 
             if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
                 return "object";
-				
-			if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
-                return "object";
-				
-			
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "sequence";
 
         }
-        return "";
+        if(operacao.equals("/")){
+            if(tipo1.equals("integer") && tipo2.equals("integer"))
+                return "atom";
+
+            if(tipo1.equals("atom") && tipo2.equals("atom"))
+                return "atom";
+
+            if(tipo1.equals("object") && tipo2.equals("object"))
+                return "object";
+
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                return "sequence";
+
+            if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
+                return "atom";
+
+            if((tipo1.equals("object") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "sequence";
+        }
+        if(operacao.equals("and") || operacao.equals("or") || operacao.equals("xor") || operacao.equals(">")
+           || operacao.equals("<") || operacao.equals(">=") || operacao.equals("<=") || operacao.equals("=")
+           || operacao.equals("!=") || operacao.equals("not")){
+            return "atom";
+        }
         /*if(operacao.equals()){
         }
         if(operacao.equals()){
-        }
-        if(operacao.equals()){
-        }
-        if(operacao.equals()){
         }*/
+        return "";
     }
 }
 
@@ -1291,12 +1460,15 @@ void erroTipo(String tipo_esq, String tipo_dir, String variavel) : {}
     {
         if(!tipo_esq.equals(tipo_dir)) {
             if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                erro_s++;
                 System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                erro_s++;
                 System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
+                erro_s++;
                 System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
         }
