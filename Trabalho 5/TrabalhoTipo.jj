@@ -16,6 +16,7 @@ static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null, tipo = null;
 static Integer erro_s = 0;
+static String nome_variavel = "";
 
     public static void main(String[] args){
         try{
@@ -290,7 +291,18 @@ void Switchtest() : {}
 void Case() : {} { <CASE>Caselist() <THEN> (Block())? }
 void Caselist() : {} { Expression() ("," Expression())* }
 void Caseelse() : {} { <ELSE> (Block())? }
-void Assignmono() : {} { Varexp() "=" Expression()}
+void Assignmono() : 
+{
+	String tipo_esq, tipo_dir; 
+} 
+{ 
+	tipo_esq = Varexp() "=" tipo_dir = Expression()
+	{
+		erroTipo(tipo_esq, tipo_dir, nome_variavel);
+		nome_variavel = "";
+	}
+}
+
 void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
 void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
 void Return() :
@@ -336,13 +348,13 @@ void Ident() :
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
 
-        // Verifica se √© uma constante
+        // Verifica se È uma constante
         if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
 
-        // Se n√£o est√° dentro de um branch (if, for, etc)
+        // Se n„o est· dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
             tmp.setNivel(nivelCorrente);
             insereTabela(TabelaSimb, tmp);
@@ -354,7 +366,7 @@ void Ident() :
                 insereTabela(TabelaAux, tmp);
             }
             else {
-                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" j√° declarado");
+                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" j· declarado");
                 erro_s++;
             }
         }
@@ -426,7 +438,7 @@ void Enumtype() :
                 insereTabela(TabelaAux, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" n√£o existe");
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" n„o existe");
             erro_s++;
         }
         listaChaves.clear();
@@ -468,7 +480,7 @@ void Procdeclare() :
     <END> <PROCEDURE>
     {
         if(procedureReturn > 0){
-            System.out.println("Erro! Procedure n√£o pode ter return!!");
+            System.out.println("Erro! Procedure n„o pode ter return!!");
             erro_s++;
         }
 
@@ -499,7 +511,7 @@ void Parameter() :
             insereTabela(TabelaSimb, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" n√£o existe");
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" n„o existe");
             erro_s++;
         }
     }
@@ -763,7 +775,7 @@ String Lastexpr() :
     |
     Seqexpr()
     {
-        return "";
+        return "sequence";
     }
     |
     "("Expression()")"
@@ -787,14 +799,14 @@ String Lastexpr() :
     Callf(t)
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A fun√ß√£o \"" + t.toString() + "\" n√£o foi declarada!\n");
+            System.out.println("Erro! A funÁ„o \"" + t.toString() + "\" n„o foi declarada!\n");
             erro_s++;
         }
 
         String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
 
         if(Categoria != null && !Categoria.equals("function")) {
-            System.out.println("Erro! O procedure \"" + t.toString() + "\" n√£o retorna nenhum valor.\n");
+            System.out.println("Erro! O procedure \"" + t.toString() + "\" n„o retorna nenhum valor.\n");
             erro_s++;
         }
         return "";
@@ -805,18 +817,56 @@ String Lastexpr() :
     }
 }
 void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
-void Varexp() :
+String Varexp() :
 {
     Token t;
+	Dado temp;
+	Dado dado_tipo;
+	Integer chave;
 }
 {
     t = <IDENTIFIER> ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
     {
+		nome_variavel = t.toString();
+		// Se n„o est· dentro de um branch (if, for, etc)
+        if(flagBranchStmt == 0) {
+            temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+			if(temp != null){
+				chave = temp.getTipo();
+				dado_tipo = TabelaSimb.get(chave);
+				return dado_tipo.getIdentificador();
+			}
+			else{
+				return "";
+			}
+        }
+		else{
+			if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
+				int i = 0;
+				for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+				
+				if(i != 0){
+					temp = buscaIdentificador(TabelaAux, t.toString(), i);
+					chave = temp.getTipo();
+					dado_tipo = TabelaSimb.get(chave);
+					return dado_tipo.getIdentificador();
+				}
+				else{
+					return "";
+				}
+			}
+			else{
+				temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+				chave = temp.getTipo();
+				dado_tipo = TabelaSimb.get(chave);
+				return dado_tipo.getIdentificador();
+			}
+		}
         naoDeclaradoFluxo(t);
     }
 }
 void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
-void Seqexpr() : {} { "{" (Expression() (("," Expression())+ | <DOLAR>)?)? "}" }
+void Seqexpr() : {} { "{" (Expression() (("," Expression())+ | <DOLAR>)?)? "}"  }
 void Call() :
 {
     Token t;
@@ -825,7 +875,7 @@ void Call() :
     t = <IDENTIFIER>
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A fun√ß√£o \"" + t.toString() + "\" n√£o foi declarada!\n");
+            System.out.println("Erro! A funÁ„o \"" + t.toString() + "\" n„o foi declarada!\n");
             erro_s++;
         }
     }
@@ -867,7 +917,7 @@ void Objexpr() : {}
     <STRING>
     {
         if(tipo != null && !tipo.toString().equals("object"))
-            System.out.println("ERRO! O tipo esperado da vari√°vel deveria ser \"" + tipo.toString() + "\".");
+            System.out.println("ERRO! O tipo esperado da vari·vel deveria ser \"" + tipo.toString() + "\".");
     }
 }
 String Atomexpr() : {}
@@ -903,7 +953,6 @@ String Atomexpr() : {}
     }
 }
 
-
 /* Funcoes Auxiliares */
 boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String Identificador, Integer NivelProcurado) :
 {
@@ -934,7 +983,7 @@ void naoDeclaradoFluxo(Token t) : {}
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
             if(i == 0){
-                System.out.println("Erro! Vari√°vel \"" + t.toString() + "\" n√£o declarada no nivel atual!");
+                System.out.println("Erro! Vari·vel \"" + t.toString() + "\" n„o declarada no nivel atual!");
                 erro_s++;
             }
         }
@@ -950,7 +999,7 @@ void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
             indexTabela++;
         }
         else {
-            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" j√° declarado no n√≠vel atual");
+            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" j· declarado no nÌvel atual");
             erro_s++;
         }
     }
@@ -1182,7 +1231,7 @@ void atualizaVariavel(Token t, String Categoria) : {}
             }
         }
         else {
-            System.out.println("Erro! O tipo \"" + t.toString() + "\" n√£o existe!\n");
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" n„o existe!\n");
             erro_s++;
 
             if(flagBranchStmt == 0)
@@ -1206,6 +1255,9 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
 
             if(tipo1.equals("object") && tipo2.equals("object"))
                 return "object";
+				
+			if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                return "sequence";
 
             if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
                 return "atom";
@@ -1215,6 +1267,11 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
 
             if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
                 return "object";
+				
+			if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "object";
+				
+			
 
         }
         return "";
@@ -1234,13 +1291,13 @@ void erroTipo(String tipo_esq, String tipo_dir, String variavel) : {}
     {
         if(!tipo_esq.equals(tipo_dir)) {
             if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
-                System.out.println("ERRO! A vari√°vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A vari·vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
-                System.out.println("ERRO! A vari√°vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A vari·vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
-                System.out.println("ERRO! A vari√°vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A vari·vel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
         }
     }
