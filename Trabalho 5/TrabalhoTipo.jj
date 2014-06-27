@@ -193,21 +193,21 @@ void Foridx() :
     {
         if(!h.equals("atom") && !h.equals("integer")) {
             erro_s++;
-            System.out.println("ERRO! O ciclo esperava o tipo "atom" mas recebeu \"" + h + "\".");
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + h + "\".");
         }
     })?
     {
 		if(!x.equals("atom") && !x.equals("integer")) {
             erro_s++;
-            System.out.println("ERRO! O ciclo esperava o tipo "atom" mas recebeu \"" + x + "\".");
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + x + "\".");
         }        
 		if(!s.equals("atom") && !s.equals("integer")) {
             erro_s++;
-            System.out.println("ERRO! O ciclo esperava o tipo "atom" mas recebeu \"" + s + "\".");
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + s + "\".");
         }
         if(!g.equals("atom") && !g.equals("integer")) {
             erro_s++;
-            System.out.println("ERRO! O ciclo esperava o tipo "atom" mas recebeu \"" + g + "\".");
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + g + "\".");
         }
     }
 }
@@ -415,8 +415,22 @@ void Assignmono() :
     }
 }
 
-void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())*}
-void Assignwithop() : {} { Varexp() ( "+" | "-" | "/" | "*" | "&" ) "=" Expression() }
+void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())* }
+
+void Assignwithop() : 
+{
+    String tipo_esq, tipo_dir;
+	Token op;
+} 
+{ 
+	tipo_esq = Varexp() ( op = "+" | op = "-" | op = "/" | op = "*" | op = "&" ) "=" tipo_dir = Expression()
+	{ 
+		tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
+		erroTipo(tipo_esq, tipo_dir, nome_variavel);
+        nome_variavel = "";
+	}
+}
+
 void Return() :
 {
     if(flagBranchStmt == 0)
