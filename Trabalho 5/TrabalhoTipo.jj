@@ -1016,7 +1016,7 @@ void Call() :
             erro_s++;
         }
     }
-    "(" (Arglist())? ")"
+    "(" (Arglist(t))? ")"
     {
         Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
 
@@ -1029,7 +1029,7 @@ void Call() :
 }
 void Callf(Token t) : {}
 {
-    "(" (Arglist())? ")"
+    "(" (Arglist(t))? ")"
     {
         Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
 
@@ -1040,10 +1040,32 @@ void Callf(Token t) : {}
         countArgs = 0;
     }
 }
-void Arglist() : {}
+void Arglist(Token t) :
 {
-    Expression() { countArgs++; }
-    ("," Expression() { countArgs++; })*
+   Dado d = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+   ArrayList <Dado> lista = d.getArgs();
+   String s, v;
+}
+{
+    s = Expression() 
+    {
+	if(!lista.isEmpty())
+	{
+	    Integer chave = lista.get(countArgs).getTipo();
+	    v = TabelaSimb.get(chave).getIdentificador();
+
+	    erroTipo(v, s, t.toString());
+	}
+	countArgs++;
+    }
+    ("," s = Expression()
+    {
+	Integer chave = lista.get(countArgs).getTipo();
+	v = TabelaSimb.get(chave).getIdentificador();
+
+	erroTipo(v, s, t.toString());
+	countArgs++;
+    })*
 }
 void Objexpr() : {}
 {
