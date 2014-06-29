@@ -1,0 +1,16 @@
+integer a, b
+atom c, d
+sequence s
+object o
+
+if c then
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	if d then
+		object z
+		z = o + 2
+		o = a - z
+	end if
+end if

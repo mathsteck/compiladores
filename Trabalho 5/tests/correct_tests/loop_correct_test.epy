@@ -1,0 +1,18 @@
+integer a, b
+atom c, d
+sequence s
+object o
+
+loop do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	loop do
+		object z
+		z = o + 2
+		o = a - z
+		until a<=b
+	end loop
+	until a<=b
+end loop

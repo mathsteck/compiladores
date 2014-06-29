@@ -1,0 +1,189 @@
+assign_error_test.epy
+
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla"
+
+a = c --integer recebe atom
+a = e --integer recebe sequence
+a = g --integer recebe object
+a = "blabla" --integer recebe string, que eh um object
+a *= c --integer recebe atom
+
+c = e --atom recebe sequence
+c = g -- atom recebe object
+c = "blabla" --atom recebe string, que eh um object
+c /= g -- atom recebe object
+e = g -- sequence recebe object
+
+declar_error_test.epy
+
+integer a = 2.2, b = "blabla"
+atom c = "blabla", d = {2,3,4}
+sequence e = 2, f = 2.2
+
+foreach_error_test.epy
+
+integer a
+sequence b
+
+foreach a (a) do
+    a += a - a
+end foreach
+
+for_error_test.epy
+
+integer a, b, i
+atom c, d
+sequence s
+object o
+
+for i = s to o do --erro tipo 
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	for i = 0 to {a,b,c} by 0.3 do --erro tipo
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end for
+	for i = a to b by d do
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end for
+end for
+
+function_error_test.epy
+
+function bar(atom n, integer m, object o, sequence s)
+	n = {2,3,4}   --erro de tipo
+	m = 4.2  --erro de tipo
+	o = {1,2,3}
+	s = 2    --erro de tipo
+	return 1
+end function
+
+atom n
+integer m
+object o
+sequence s
+
+bar(m, m, m, m) --ERROR (param type)
+bar(n, n, n, n) --ERROR (param type)
+bar(o, o, o, o) --ERROR (param type)
+bar(s, s, s, s) --ERROR (param type)
+
+if_error_test.epy
+
+integer a, b
+atom c, d
+sequence s
+object o
+
+if o then --erro tipo
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	if s then --erro de tipo
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end if
+end if
+
+loop_error_test.epy
+
+integer a, b
+atom c, d
+sequence s
+object o
+
+loop do
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	loop do
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+		until o -- erro tipo
+	end loop
+	until s --erro tipo
+end loop
+
+procedure_error_test.epy
+
+procedure bar(atom n, integer m, object o, sequence s)
+	n={2,3,4}   --erro de tipo
+	m=4.2  --erro de tipo
+	o = {1,2,3}
+	s = 2    --erro de tipo
+end procedure
+
+atom n
+integer m
+object o
+sequence s
+
+bar(m, m, m, m) --ERROR (param type)
+bar(n, n, n, n) --ERROR (param type)
+bar(o, o, o, o) --ERROR (param type)
+bar(s, s, s, s) --ERROR (param type)
+
+type_error_test.epy
+
+type hour(integer x)
+	return x >= 0 and x <= 23
+end type
+
+hour h1
+integer a
+atom b
+object c
+sequence s
+
+h1 = a --tipos diferentes
+h1 = b --tipos diferentes
+h1 = c --tipos diferentes
+h1 = d --tipos diferentes
+
+?a + h1 --tipos diferentes
+?b * h1 --tipos diferentes
+?c / h1 --tipos diferentes
+?d - h1 --tipos diferentes
+
+h1 = {1,2,3} -- tipos diferentes
+h1 = "abc"  -- tipos diferentes
+
+while_error_test.epy
+
+integer a, b
+atom c, d
+sequence s
+object o
+
+while o do --erro tipo
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	while s do --erro de tipo
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end while
+end while
+

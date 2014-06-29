@@ -1,0 +1,22 @@
+type hour(integer x)
+	return x >= 0 and x <= 23
+end type
+
+hour h1
+integer a
+atom b
+object c
+sequence s
+
+h1 = a --tipos diferentes
+h1 = b --tipos diferentes
+h1 = c --tipos diferentes
+h1 = d --tipos diferentes
+
+?a + h1 --tipos diferentes
+?b * h1 --tipos diferentes
+?c / h1 --tipos diferentes
+?d - h1 --tipos diferentes
+
+h1 = {1,2,3} -- tipos diferentes
+h1 = "abc"  -- tipos diferentes

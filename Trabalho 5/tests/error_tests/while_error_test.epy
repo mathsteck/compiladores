@@ -1,0 +1,18 @@
+integer a, b
+atom c, d
+sequence s
+object o
+
+while o do --erro tipo
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	while s do --erro de tipo
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end while
+end while

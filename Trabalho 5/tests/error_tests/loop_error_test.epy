@@ -1,0 +1,20 @@
+integer a, b
+atom c, d
+sequence s
+object o
+
+loop do
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	loop do
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+		until o -- erro tipo
+	end loop
+	until s --erro tipo
+end loop

@@ -1,0 +1,9 @@
+type hour(integer x)
+	return x >= 0 and x <= 23
+end type
+
+hour h1, h2
+
+h1 = 10     
+h2 = 23  
+h1 = h2

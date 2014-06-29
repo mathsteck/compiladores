@@ -1,0 +1,15 @@
+integer a, b
+atom c, d
+object o
+
+while d do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	while c do
+		object z
+		z = o + 2
+		o = a - z
+	end while
+end while

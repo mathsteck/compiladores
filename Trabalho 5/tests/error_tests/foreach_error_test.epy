@@ -1,0 +1,6 @@
+integer a
+sequence b
+
+foreach a (a) do
+    a += a - a
+end foreach

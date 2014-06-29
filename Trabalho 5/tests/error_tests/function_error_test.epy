@@ -1,0 +1,17 @@
+function bar(atom n, integer m, object o, sequence s)
+	n = {2,3,4}   --erro de tipo
+	m = 4.2  --erro de tipo
+	o = {1,2,3}
+	s = 2    --erro de tipo
+	return 1
+end function
+
+atom n
+integer m
+object o
+sequence s
+
+bar(m, m, m, m) --ERROR (param type)
+bar(n, n, n, n) --ERROR (param type)
+bar(o, o, o, o) --ERROR (param type)
+bar(s, s, s, s) --ERROR (param type)

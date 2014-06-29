@@ -1,0 +1,16 @@
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla", j = 'b'
+
+c = a and b
+c = a or b
+c = a xor b
+
+d = a and c
+d = a or c
+d = a xor c
+
+g = g and h
+g = g or h
+g = g xor h

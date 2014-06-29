@@ -1,0 +1,23 @@
+integer a, b, i
+atom c, d
+sequence s
+object o
+
+for i = s to o do --erro tipo 
+	a = 2 + c -- erro tipo
+	c = a + s --erro tipo
+	c = s * 2.5 --erro tipo
+	s = c + 2  --erro tipo
+	s = o --erro tipo
+	a = o --erro tipo
+	for i = 0 to {a,b,c} by 0.3 do --erro tipo
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end for
+	for i = a to b by d do
+		object z
+		a = z + 2 --erro tipo
+		c = a - z --erro tipo
+	end for
+end for

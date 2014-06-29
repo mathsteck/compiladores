@@ -1,0 +1,21 @@
+integer a, b, i
+atom c, d
+sequence s
+object o
+
+for i = a to b do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	for i = 0 to 20 by 2 do
+		object z
+		z = o + 2
+		o = a - z
+	end for
+	for i = a to b by d do
+		object z
+		z = o + 2
+		o = a - z
+	end for
+end for

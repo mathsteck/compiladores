@@ -1,0 +1,31 @@
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla", j = 'b'
+
+d = a > b
+d = not(a=b)
+
+d = a > c
+d = not(a=c)
+
+e = e > f
+e = not(e=f)
+
+e = e > a
+e = not(e=a)
+
+e = e > c
+e = not(e=c)
+
+g = g > b
+g = not(g=b)
+
+g = g > c
+g = not(g=c)
+
+g = g > e
+g = not(g=e)
+
+g = g > h
+g = not(g=h)

@@ -1,0 +1,10 @@
+integer a
+sequence b
+
+foreach a (b) do
+    a += a - a
+end foreach
+
+foreach a ({a, a, a}) do
+    a *= a
+end foreach

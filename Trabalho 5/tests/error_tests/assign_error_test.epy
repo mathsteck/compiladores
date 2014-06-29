@@ -1,0 +1,16 @@
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla"
+
+a = c --integer recebe atom
+a = e --integer recebe sequence
+a = g --integer recebe object
+a = "blabla" --integer recebe string, que eh um object
+a *= c --integer recebe atom
+
+c = e --atom recebe sequence
+c = g -- atom recebe object
+c = "blabla" --atom recebe string, que eh um object
+c /= g -- atom recebe object
+e = g -- sequence recebe object

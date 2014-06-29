@@ -1,0 +1,255 @@
+arit_operation_correct_test.epy
+
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla", j = 'b'
+
+c = a*b+a/b-a
+a = -b
+c = a*b+a/b-a*c+a/c-c*d+c/d
+c = -d
+c= -a
+e = e*f+e/f-e*a+e/a-f*c+f/c
+e = -f
+g = g*h+g/h-g*e+g/f-e*f+e/f-e*a+e/a-f*c+f/c
+g = -h
+
+concat_operation_correct_test.epy
+
+sequence a
+
+a = {1, 2, 3} & 4        
+a = 4 & 5              
+a = {{1, 1}, 2, 3} & {4, 5} 
+
+declar_assign_correct_test.epy
+
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla"
+
+a = b
+c = d
+c = a
+e = f
+g = a
+g = c
+g = e
+g = h
+g *= a
+g /= c
+g -= e
+g += h
+g &= h
+f -= g
+
+for_correct_test.epy
+
+integer a, b, i
+atom c, d
+sequence s
+object o
+
+for i = a to b do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	for i = 0 to 20 by 2 do
+		object z
+		z = o + 2
+		o = a - z
+	end for
+	for i = a to b by d do
+		object z
+		z = o + 2
+		o = a - z
+	end for
+end for
+
+foreach_correct_test.epy
+
+integer a
+sequence b
+
+foreach a (b) do
+    a += a - a
+end foreach
+
+foreach a ({a, a, a}) do
+    a *= a
+end foreach
+
+function_correct_test.epy
+
+function bar1(atom n)
+	n=2.2
+	return n
+end function
+
+function bar2(atom n, integer m, object o, sequence s)
+	n=2.2
+	m=4
+	o = {1,2,3}
+	s = {1,2,3}
+	return 1
+end function
+
+atom n
+integer m
+object o
+sequence s
+
+bar1(n)
+bar2(n, m,  o, s)
+bar2(m, m,  n, s)
+bar2(n, m,  s, s)
+
+if_correct_test.epy
+
+integer a, b
+atom c, d
+sequence s
+object o
+
+if c then
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	if d then
+		object z
+		z = o + 2
+		o = a - z
+	end if
+end if
+
+logic_operation_correct_test.epy
+
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla", j = 'b'
+
+c = a and b
+c = a or b
+c = a xor b
+
+d = a and c
+d = a or c
+d = a xor c
+
+g = g and h
+g = g or h
+g = g xor h
+
+loop_correct_test.epy
+
+integer a, b
+atom c, d
+sequence s
+object o
+
+loop do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	loop do
+		object z
+		z = o + 2
+		o = a - z
+		until a<=b
+	end loop
+	until a<=b
+end loop
+
+procedure_correct_test.epy
+
+procedure bar1(atom n)
+	n=2.2
+end procedure
+
+procedure bar2(atom n, integer m, object o, sequence s)
+	n=2.2
+	m=4
+	o = {1,2,3}
+	s = {1,2,3}
+end procedure
+
+atom n
+integer m
+object o
+sequence s
+
+bar1(n)
+bar2(n, m,  o, s)
+bar2(m, m,  n, s)
+bar2(n, m,  s, s)
+
+rel_operation_correct_test.epy
+
+integer a = 2, b = 5
+atom c = 3, d = 7.4
+sequence e = {1,2,3}, f = {4,5,6}
+object g = {7,8,9}, h = 7, i = "blabla", j = 'b'
+
+d = a > b
+d = not(a=b)
+
+d = a > c
+d = not(a=c)
+
+e = e > f
+e = not(e=f)
+
+e = e > a
+e = not(e=a)
+
+e = e > c
+e = not(e=c)
+
+g = g > b
+g = not(g=b)
+
+g = g > c
+g = not(g=c)
+
+g = g > e
+g = not(g=e)
+
+g = g > h
+g = not(g=h)
+
+type_correct_test.epy
+
+type hour(integer x)
+	return x >= 0 and x <= 23
+end type
+
+hour h1, h2
+
+h1 = 10     
+h2 = 23  
+h1 = h2
+
+while_correct_test.epy
+
+integer a, b
+atom c, d
+object o
+
+while d do
+	a = 2 + b
+	c = a + b
+	c = d * 2.5
+	o = a
+	while c do
+		object z
+		z = o + 2
+		o = a - z
+	end while
+end while
+

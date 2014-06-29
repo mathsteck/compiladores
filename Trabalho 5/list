@@ -1,0 +1,6 @@
+for file in tests/error_tests/*.epy; do
+    echo ${file##*/}
+    echo
+    cat tests/error_tests/${file##*/}
+    echo
+done
