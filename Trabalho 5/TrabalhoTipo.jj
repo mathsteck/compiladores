@@ -220,10 +220,13 @@ void Foreachstmt() :
     (t = <IDENTIFIER>
     {
         naoDeclaradoFluxo(t);
-    })? "(" ( t = <IDENTIFIER>
+    })?
+    "(" ( t = <IDENTIFIER>
     {
         // FIXME t so pode ser sequence
         naoDeclaradoFluxo(t);
+        String x = checaTipoFluxo(t);
+        erroTipo("sequence", x, t.toString());
     }
     |
     Seqexpr() ) ")" (Labelstmt())? <DO>
@@ -763,10 +766,10 @@ String Binop() :
     }
     |
     t = <OR> 
-	{
+    {
         return t.toString();
     }
-	| t = <XOR>
+    | t = <XOR>
     {
         return t.toString();
     }
@@ -1486,24 +1489,23 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
         if(operacao.equals("and") || operacao.equals("or") || operacao.equals("xor") || operacao.equals(">")
            || operacao.equals("<") || operacao.equals(">=") || operacao.equals("<=") || operacao.equals("=")
            || operacao.equals("!=") || operacao.equals("not")){
-			if(tipo1.equals("sequence") && tipo2.equals("sequence"))
-				return "sequence";  	
-			
-			if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                return "sequence";  	
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
                 return "sequence";
 
             if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
                 return "sequence";
 
             if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
-                return "sequence";	
-			else	 
-            	return "atom";
+                return "sequence";    
+            else     
+                return "atom";
         }
-        /*if(operacao.equals()){
+        if(operacao.equals("&")){
+            return "sequence";
         }
-        if(operacao.equals()){
-        }*/
         return "";
     }
 }

@@ -547,8 +547,10 @@ static String nome_variavel = "", nomeFunc = "";
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
       t = jj_consume_token(IDENTIFIER);
-        // FIXME t s� pode ser sequence
+        // FIXME t so pode ser sequence
         naoDeclaradoFluxo(t);
+        String x = checaTipoFluxo(t);
+        erroTipo("sequence", x, t.toString());
       break;
     case 89:
       Seqexpr();
@@ -1083,13 +1085,13 @@ static String nome_variavel = "", nomeFunc = "";
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
 
-        // Verifica se � uma constante
+        // Verifica se e uma constante
         if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
 
-        // Se n�o est� dentro de um branch (if, for, etc)
+        // Se nao esta dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
             tmp.setNivel(nivelCorrente);
             insereTabela(TabelaSimb, tmp);
@@ -1101,7 +1103,7 @@ static String nome_variavel = "", nomeFunc = "";
                 insereTabela(TabelaAux, tmp);
             }
             else {
-                System.out.println("Erro! Identificador \u005c"" + tmp.getIdentificador() +  "\u005c" j\ufffd declarado");
+                System.out.println("Erro! Identificador \u005c"" + tmp.getIdentificador() +  "\u005c" ja declarado");
                 erro_s++;
             }
         }
@@ -1216,7 +1218,7 @@ static String nome_variavel = "", nomeFunc = "";
                 insereTabela(TabelaAux, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \u005c"" + t.toString() + "\u005c" n\ufffdo existe");
+            System.out.println("Erro! Palavra reservada \u005c"" + t.toString() + "\u005c" nao existe");
             erro_s++;
         }
         listaChaves.clear();
@@ -1282,7 +1284,7 @@ static String nome_variavel = "", nomeFunc = "";
     jj_consume_token(END);
     jj_consume_token(PROCEDURE);
         if(procedureReturn > 0){
-            System.out.println("Erro! Procedure n\ufffdo pode ter return!!");
+            System.out.println("Erro! Procedure nao pode ter return!!");
             erro_s++;
         }
 
@@ -1326,7 +1328,7 @@ static String nome_variavel = "", nomeFunc = "";
             insereTabela(TabelaSimb, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \u005c"" + t.toString() + "\u005c" n\ufffdo existe");
+            System.out.println("Erro! Palavra reservada \u005c"" + t.toString() + "\u005c" nao existe");
             erro_s++;
         }
   }
@@ -1488,6 +1490,7 @@ static String nome_variavel = "", nomeFunc = "";
       break;
     case OR:
       t = jj_consume_token(OR);
+        {if (true) return t.toString();}
       break;
     case XOR:
       t = jj_consume_token(XOR);
@@ -1731,7 +1734,7 @@ static String nome_variavel = "", nomeFunc = "";
       break;
     case BIN:
       jj_consume_token(BIN);
-        {if (true) return "";}
+        {if (true) return "atom";}
       break;
     case 89:
       Seqexpr();
@@ -1756,14 +1759,14 @@ static String nome_variavel = "", nomeFunc = "";
         case 73:
           Callf(t);
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A fun\ufffd\ufffdo \u005c"" + t.toString() + "\u005c" n\ufffdo foi declarada!\u005cn");
+            System.out.println("Erro! A funcao \u005c"" + t.toString() + "\u005c" nao foi declarada!\u005cn");
             erro_s++;
         }
 
         String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
 
         if(Categoria != null && !Categoria.equals("function")) {
-            System.out.println("Erro! O procedure \u005c"" + t.toString() + "\u005c" n\ufffdo retorna nenhum valor.\u005cn");
+            System.out.println("Erro! O procedure \u005c"" + t.toString() + "\u005c" nao retorna nenhum valor.\u005cn");
             erro_s++;
         }
         Dado func = buscaIdentificador(TabelaSimb, t.toString(), 0);
@@ -1958,7 +1961,7 @@ static String nome_variavel = "", nomeFunc = "";
     Token t;
     t = jj_consume_token(IDENTIFIER);
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A fun\ufffd\ufffdo \u005c"" + t.toString() + "\u005c" n\ufffdo foi declarada!\u005cn");
+            System.out.println("Erro! A funcao \u005c"" + t.toString() + "\u005c" nao foi declarada!\u005cn");
             erro_s++;
         }
     jj_consume_token(73);
@@ -2075,7 +2078,7 @@ static String nome_variavel = "", nomeFunc = "";
     case STRING:
       jj_consume_token(STRING);
         if(tipo != null && !tipo.toString().equals("object"))
-            System.out.println("ERRO! O tipo esperado da vari\ufffdvel deveria ser \u005c"" + tipo.toString() + "\u005c".");
+            System.out.println("ERRO! O tipo esperado da variavel deveria ser \u005c"" + tipo.toString() + "\u005c".");
       break;
     default:
       jj_la1[82] = jj_gen;
@@ -2142,7 +2145,7 @@ static String nome_variavel = "", nomeFunc = "";
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
             if(i == 0){
-                System.out.println("Erro! Vari\ufffdvel \u005c"" + t.toString() + "\u005c" n\ufffdo declarada no nivel atual!");
+                System.out.println("Erro! Variavel \u005c"" + t.toString() + "\u005c" nao declarada no nivel atual!");
                 erro_s++;
             }
         }
@@ -2155,7 +2158,7 @@ static String nome_variavel = "", nomeFunc = "";
             indexTabela++;
         }
         else {
-            System.out.println("Erro! Identificador \u005c"" + dado.getIdentificador() +  "\u005c" j\ufffd declarado no n\ufffdvel atual");
+            System.out.println("Erro! Identificador \u005c"" + dado.getIdentificador() +  "\u005c" js declarado no nivel atual");
             erro_s++;
         }
   }
@@ -2334,7 +2337,7 @@ static String nome_variavel = "", nomeFunc = "";
             }
         }
         else {
-            System.out.println("Erro! O tipo \u005c"" + t.toString() + "\u005c" n\ufffdo existe!\u005cn");
+            System.out.println("Erro! O tipo \u005c"" + t.toString() + "\u005c" nao existe!\u005cn");
             erro_s++;
 
             if(flagBranchStmt == 0)
@@ -2412,12 +2415,23 @@ static String nome_variavel = "", nomeFunc = "";
         if(operacao.equals("and") || operacao.equals("or") || operacao.equals("xor") || operacao.equals(">")
            || operacao.equals("<") || operacao.equals(">=") || operacao.equals("<=") || operacao.equals("=")
            || operacao.equals("!=") || operacao.equals("not")){
-            {if (true) return "atom";}
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                {if (true) return "sequence";}
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                {if (true) return "sequence";}
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                {if (true) return "sequence";}
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                {if (true) return "sequence";}
+            else
+                {if (true) return "atom";}
         }
-        /*if(operacao.equals()){
+        if(operacao.equals("&")){
+            {if (true) return "sequence";}
         }
-        if(operacao.equals()){
-        }*/
         {if (true) return "";}
     throw new Error("Missing return statement in function");
   }
@@ -2426,15 +2440,15 @@ static String nome_variavel = "", nomeFunc = "";
         if(!tipo_esq.equals(tipo_dir)) {
             if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
                 erro_s++;
-                System.out.println("ERRO! A vari\ufffdvel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
+                System.out.println("ERRO! A variavel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
             }
             else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
                 erro_s++;
-                System.out.println("ERRO! A vari\ufffdvel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
+                System.out.println("ERRO! A variavel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
             }
             else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
                 erro_s++;
-                System.out.println("ERRO! A vari\ufffdvel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
+                System.out.println("ERRO! A variavel \u005c"" + variavel + "\u005c" esperava o tipo \u005c"" + tipo_esq + "\u005c" mas recebeu \u005c"" + tipo_dir + "\u005c".");
             }
         }
   }
@@ -2620,7 +2634,7 @@ static String nome_variavel = "", nomeFunc = "";
     Dado temp;
     Dado dado_tipo;
     Integer chave;
-        // Se n�o est� dentro de um branch (if, for, etc)
+        // Se nao esta dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
 
             temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
@@ -2741,21 +2755,9 @@ static String nome_variavel = "", nomeFunc = "";
     finally { jj_save(11, xla); }
   }
 
-  static private boolean jj_3R_64() {
-    if (jj_3R_75()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_5() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_58() {
+  static private boolean jj_3R_59() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_63()) {
-    jj_scanpos = xsp;
     if (jj_3R_64()) {
     jj_scanpos = xsp;
     if (jj_3R_65()) {
@@ -2764,7 +2766,9 @@ static String nome_variavel = "", nomeFunc = "";
     jj_scanpos = xsp;
     if (jj_3R_67()) {
     jj_scanpos = xsp;
-    if (jj_3R_68()) return true;
+    if (jj_3R_68()) {
+    jj_scanpos = xsp;
+    if (jj_3R_69()) return true;
     }
     }
     }
@@ -2773,8 +2777,13 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_63() {
-    if (jj_3R_74()) return true;
+  static private boolean jj_3R_64() {
+    if (jj_3R_75()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_5() {
+    if (jj_3R_23()) return true;
     return false;
   }
 
@@ -2793,6 +2802,26 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_74() {
+    if (jj_scan_token(76)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_84() {
+    if (jj_scan_token(ATOMHEXADECIMAL)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_73() {
+    if (jj_scan_token(77)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_83() {
+    if (jj_scan_token(ATOMDECIMAL)) return true;
+    return false;
+  }
+
   static private boolean jj_3_6() {
     if (jj_3R_19()) return true;
     return false;
@@ -2803,13 +2832,31 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_73() {
-    if (jj_scan_token(76)) return true;
+  static private boolean jj_3R_29() {
+    if (jj_3R_32()) return true;
     return false;
   }
 
-  static private boolean jj_3R_83() {
-    if (jj_scan_token(ATOMHEXADECIMAL)) return true;
+  static private boolean jj_3R_63() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_72()) {
+    jj_scanpos = xsp;
+    if (jj_3R_73()) {
+    jj_scanpos = xsp;
+    if (jj_3R_74()) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_72() {
+    if (jj_scan_token(NOT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_82() {
+    if (jj_scan_token(ATOMOCTAL)) return true;
     return false;
   }
 
@@ -2818,82 +2865,42 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_29() {
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_72() {
-    if (jj_scan_token(77)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_82() {
-    if (jj_scan_token(ATOMDECIMAL)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_75() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_62() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_71()) {
-    jj_scanpos = xsp;
-    if (jj_3R_72()) {
-    jj_scanpos = xsp;
-    if (jj_3R_73()) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_71() {
-    if (jj_scan_token(NOT)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_81() {
-    if (jj_scan_token(ATOMOCTAL)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_80() {
     if (jj_scan_token(ATOMBINARY)) return true;
     return false;
   }
 
-  static private boolean jj_3R_57() {
-    if (jj_3R_62()) return true;
+  static private boolean jj_3R_76() {
+    if (jj_scan_token(STRING)) return true;
     return false;
   }
 
-  static private boolean jj_3R_54() {
+  static private boolean jj_3R_58() {
+    if (jj_3R_63()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_55() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_57()) jj_scanpos = xsp;
-    if (jj_3R_58()) return true;
+    if (jj_3R_58()) jj_scanpos = xsp;
+    if (jj_3R_59()) return true;
     return false;
   }
 
-  static private boolean jj_3R_79() {
+  static private boolean jj_3R_80() {
     if (jj_scan_token(ATOMREAL)) return true;
     return false;
   }
 
-  static private boolean jj_3R_78() {
+  static private boolean jj_3R_79() {
     if (jj_scan_token(ATOMINTEGER)) return true;
     return false;
   }
 
-  static private boolean jj_3R_74() {
+  static private boolean jj_3R_75() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_78()) {
-    jj_scanpos = xsp;
     if (jj_3R_79()) {
     jj_scanpos = xsp;
     if (jj_3R_80()) {
@@ -2902,12 +2909,19 @@ static String nome_variavel = "", nomeFunc = "";
     jj_scanpos = xsp;
     if (jj_3R_82()) {
     jj_scanpos = xsp;
-    if (jj_3R_83()) return true;
+    if (jj_3R_83()) {
+    jj_scanpos = xsp;
+    if (jj_3R_84()) return true;
     }
     }
     }
     }
     }
+    return false;
+  }
+
+  static private boolean jj_3R_71() {
+    if (jj_scan_token(78)) return true;
     return false;
   }
 
@@ -2917,38 +2931,38 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_70() {
-    if (jj_scan_token(78)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_59() {
+  static private boolean jj_3R_60() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_69()) {
+    if (jj_3R_70()) {
     jj_scanpos = xsp;
-    if (jj_3R_70()) return true;
+    if (jj_3R_71()) return true;
     }
     return false;
   }
 
-  static private boolean jj_3R_69() {
+  static private boolean jj_3R_70() {
     if (jj_scan_token(79)) return true;
     return false;
   }
 
-  static private boolean jj_3R_55() {
-    if (jj_3R_59()) return true;
+  static private boolean jj_3R_56() {
+    if (jj_3R_60()) return true;
     return false;
   }
 
-  static private boolean jj_3R_45() {
-    if (jj_3R_54()) return true;
+  static private boolean jj_3R_46() {
+    if (jj_3R_55()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_55()) { jj_scanpos = xsp; break; }
+      if (jj_3R_56()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  static private boolean jj_3R_62() {
+    if (jj_scan_token(77)) return true;
     return false;
   }
 
@@ -2962,22 +2976,17 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_61() {
-    if (jj_scan_token(77)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_56() {
+  static private boolean jj_3R_57() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_60()) {
+    if (jj_3R_61()) {
     jj_scanpos = xsp;
-    if (jj_3R_61()) return true;
+    if (jj_3R_62()) return true;
     }
     return false;
   }
 
-  static private boolean jj_3R_60() {
+  static private boolean jj_3R_61() {
     if (jj_scan_token(76)) return true;
     return false;
   }
@@ -2987,42 +2996,42 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_88() {
+  static private boolean jj_3R_89() {
     if (jj_scan_token(73)) return true;
     return false;
   }
 
-  static private boolean jj_3R_46() {
-    if (jj_3R_56()) return true;
+  static private boolean jj_3R_47() {
+    if (jj_3R_57()) return true;
     return false;
   }
 
   static private boolean jj_3R_40() {
-    if (jj_3R_45()) return true;
+    if (jj_3R_46()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_46()) { jj_scanpos = xsp; break; }
+      if (jj_3R_47()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_90() {
+  static private boolean jj_3R_91() {
     if (jj_scan_token(86)) return true;
     return false;
   }
 
-  static private boolean jj_3R_89() {
+  static private boolean jj_3R_90() {
     Token xsp;
-    if (jj_3R_90()) return true;
+    if (jj_3R_91()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_90()) { jj_scanpos = xsp; break; }
+      if (jj_3R_91()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_84() {
+  static private boolean jj_3R_85() {
     if (jj_3R_29()) return true;
     return false;
   }
@@ -3042,22 +3051,16 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_76() {
+  static private boolean jj_3R_77() {
     if (jj_scan_token(89)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_84()) jj_scanpos = xsp;
+    if (jj_3R_85()) jj_scanpos = xsp;
     if (jj_scan_token(90)) return true;
     return false;
   }
 
-  static private boolean jj_3R_23() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_47() {
+  static private boolean jj_3R_48() {
     if (jj_scan_token(80)) return true;
     return false;
   }
@@ -3069,8 +3072,9 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_27() {
-    if (jj_scan_token(75)) return true;
+  static private boolean jj_3R_23() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_3R_28()) return true;
     return false;
   }
 
@@ -3080,8 +3084,13 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_27() {
+    if (jj_scan_token(75)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_41() {
-    if (jj_3R_47()) return true;
+    if (jj_3R_48()) return true;
     return false;
   }
 
@@ -3100,24 +3109,13 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_87() {
+  static private boolean jj_3R_88() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_11()) {
     jj_scanpos = xsp;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     }
-    return false;
-  }
-
-  static private boolean jj_3R_22() {
-    if (jj_3R_26()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_27()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(72)) return true;
     return false;
   }
 
@@ -3136,12 +3134,18 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3_4() {
-    if (jj_3R_22()) return true;
+  static private boolean jj_3R_22() {
+    if (jj_3R_26()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_27()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(72)) return true;
     return false;
   }
 
-  static private boolean jj_3R_53() {
+  static private boolean jj_3R_54() {
     if (jj_scan_token(85)) return true;
     return false;
   }
@@ -3154,8 +3158,18 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_52() {
+  static private boolean jj_3R_53() {
     if (jj_scan_token(72)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_4() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_52() {
+    if (jj_scan_token(84)) return true;
     return false;
   }
 
@@ -3180,17 +3194,39 @@ static String nome_variavel = "", nomeFunc = "";
   }
 
   static private boolean jj_3R_51() {
-    if (jj_scan_token(84)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_50() {
     if (jj_scan_token(83)) return true;
     return false;
   }
 
-  static private boolean jj_3R_49() {
+  static private boolean jj_3R_50() {
     if (jj_scan_token(82)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_42() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_49()) {
+    jj_scanpos = xsp;
+    if (jj_3R_50()) {
+    jj_scanpos = xsp;
+    if (jj_3R_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_52()) {
+    jj_scanpos = xsp;
+    if (jj_3R_53()) {
+    jj_scanpos = xsp;
+    if (jj_3R_54()) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_49() {
+    if (jj_scan_token(81)) return true;
     return false;
   }
 
@@ -3205,30 +3241,8 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_42() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_50()) {
-    jj_scanpos = xsp;
-    if (jj_3R_51()) {
-    jj_scanpos = xsp;
-    if (jj_3R_52()) {
-    jj_scanpos = xsp;
-    if (jj_3R_53()) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_48() {
-    if (jj_scan_token(81)) return true;
+  static private boolean jj_3R_87() {
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -3242,17 +3256,12 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_85() {
-    if (jj_3R_87()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_77() {
+  static private boolean jj_3R_78() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_85()) {
+    if (jj_3R_86()) {
     jj_scanpos = xsp;
-    if (jj_3R_86()) return true;
+    if (jj_3R_87()) return true;
     }
     return false;
   }
@@ -3262,16 +3271,11 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_44() {
-    if (jj_scan_token(XOR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_68() {
+  static private boolean jj_3R_69() {
     if (jj_scan_token(IDENTIFIER)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_77()) jj_scanpos = xsp;
+    if (jj_3R_78()) jj_scanpos = xsp;
     return false;
   }
 
@@ -3285,9 +3289,19 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_67() {
+  static private boolean jj_3R_68() {
     if (jj_scan_token(73)) return true;
     if (jj_3R_29()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_45() {
+    if (jj_scan_token(XOR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_67() {
+    if (jj_3R_77()) return true;
     return false;
   }
 
@@ -3296,8 +3310,13 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_44() {
+    if (jj_scan_token(OR)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_66() {
-    if (jj_3R_76()) return true;
+    if (jj_scan_token(BIN)) return true;
     return false;
   }
 
@@ -3306,19 +3325,14 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_65() {
-    if (jj_scan_token(BIN)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_39() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_43()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(45)) {
+    if (jj_3R_44()) {
     jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
+    if (jj_3R_45()) return true;
     }
     }
     return false;
@@ -3326,6 +3340,11 @@ static String nome_variavel = "", nomeFunc = "";
 
   static private boolean jj_3R_43() {
     if (jj_scan_token(AND)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_65() {
+    if (jj_3R_76()) return true;
     return false;
   }
 
