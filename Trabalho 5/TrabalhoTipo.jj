@@ -222,7 +222,7 @@ void Foreachstmt() :
         naoDeclaradoFluxo(t);
     })? "(" ( t = <IDENTIFIER>
     {
-        // FIXME t só pode ser sequence
+        // FIXME t so pode ser sequence
         naoDeclaradoFluxo(t);
     }
     |
@@ -484,13 +484,13 @@ void Ident() :
         Dado tmp = new Dado();
         tmp.setIdentificador(t.toString());
 
-        // Verifica se é uma constante
+        // Verifica se e uma constante
         if(valor != null && flagCategoria.equals("constant")) {
             tmp.setValor(valor.toString());
             valor = null;
         }
 
-        // Se não está dentro de um branch (if, for, etc)
+        // Se nao esta dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
             tmp.setNivel(nivelCorrente);
             insereTabela(TabelaSimb, tmp);
@@ -502,7 +502,7 @@ void Ident() :
                 insereTabela(TabelaAux, tmp);
             }
             else {
-                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" já declarado");
+                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" ja declarado");
                 erro_s++;
             }
         }
@@ -574,7 +574,7 @@ void Enumtype() :
                 insereTabela(TabelaAux, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" nao existe");
             erro_s++;
         }
         listaChaves.clear();
@@ -616,7 +616,7 @@ void Procdeclare() :
     <END> <PROCEDURE>
     {
         if(procedureReturn > 0){
-            System.out.println("Erro! Procedure não pode ter return!!");
+            System.out.println("Erro! Procedure nao pode ter return!!");
             erro_s++;
         }
 
@@ -647,7 +647,7 @@ void Parameter() :
             insereTabela(TabelaSimb, dado);
         }
         else {
-            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" nao existe");
             erro_s++;
         }
     }
@@ -762,7 +762,11 @@ String Binop() :
         return t.toString();
     }
     |
-    t = <OR> | t = <XOR>
+    t = <OR> 
+	{
+        return t.toString();
+    }
+	| t = <XOR>
     {
         return t.toString();
     }
@@ -951,7 +955,7 @@ String Lastexpr() :
     |
     <BIN>
     {
-        return "";
+        return "atom";
     }
     |
     Seqexpr()
@@ -973,14 +977,14 @@ String Lastexpr() :
     Callf(t)
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+            System.out.println("Erro! A funcao \"" + t.toString() + "\" nao foi declarada!\n");
             erro_s++;
         }
 
         String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
 
         if(Categoria != null && !Categoria.equals("function")) {
-            System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
+            System.out.println("Erro! O procedure \"" + t.toString() + "\" nao retorna nenhum valor.\n");
             erro_s++;
         }
         Dado func = buscaIdentificador(TabelaSimb, t.toString(), 0);
@@ -1021,7 +1025,7 @@ void Call() :
     t = <IDENTIFIER>
     {
         if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
-            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+            System.out.println("Erro! A funcao \"" + t.toString() + "\" nao foi declarada!\n");
             erro_s++;
         }
     }
@@ -1087,7 +1091,7 @@ void Objexpr() : {}
     <STRING>
     {
         if(tipo != null && !tipo.toString().equals("object"))
-            System.out.println("ERRO! O tipo esperado da variável deveria ser \"" + tipo.toString() + "\".");
+            System.out.println("ERRO! O tipo esperado da variavel deveria ser \"" + tipo.toString() + "\".");
     }
 }
 String Atomexpr() : {}
@@ -1153,7 +1157,7 @@ void naoDeclaradoFluxo(Token t) : {}
             for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
 
             if(i == 0){
-                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+                System.out.println("Erro! Variavel \"" + t.toString() + "\" nao declarada no nivel atual!");
                 erro_s++;
             }
         }
@@ -1169,7 +1173,7 @@ void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
             indexTabela++;
         }
         else {
-            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" já declarado no nível atual");
+            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" js declarado no nivel atual");
             erro_s++;
         }
     }
@@ -1401,7 +1405,7 @@ void atualizaVariavel(Token t, String Categoria) : {}
             }
         }
         else {
-            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" nao existe!\n");
             erro_s++;
 
             if(flagBranchStmt == 0)
@@ -1482,7 +1486,19 @@ String comparaTipos(String tipo1, String operacao, String tipo2) : {}
         if(operacao.equals("and") || operacao.equals("or") || operacao.equals("xor") || operacao.equals(">")
            || operacao.equals("<") || operacao.equals(">=") || operacao.equals("<=") || operacao.equals("=")
            || operacao.equals("!=") || operacao.equals("not")){
-            return "atom";
+			if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+				return "sequence";  	
+			
+			if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "sequence";	
+			else	 
+            	return "atom";
         }
         /*if(operacao.equals()){
         }
@@ -1498,15 +1514,15 @@ void erroTipo(String tipo_esq, String tipo_dir, String variavel) : {}
         if(!tipo_esq.equals(tipo_dir)) {
             if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
                 erro_s++;
-                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A variavel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
                 erro_s++;
-                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A variavel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
             else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
                 erro_s++;
-                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+                System.out.println("ERRO! A variavel \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
             }
         }
     }
@@ -1700,7 +1716,7 @@ String checaTipoFluxo(Token t) :
 }
 {
     {
-        // Se não está dentro de um branch (if, for, etc)
+        // Se nao esta dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
 
             temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
