@@ -1753,8 +1753,7 @@ static String nome_variavel = "", nomeFunc = "";
       case 86:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 86:
-          Variable();
-        {if (true) return "";}
+          Variable(t);
           break;
         case 73:
           Callf(t);
@@ -1794,7 +1793,8 @@ static String nome_variavel = "", nomeFunc = "";
     throw new Error("Missing return statement in function");
   }
 
-  static final public void Variable() throws ParseException {
+  static final public void Variable(Token t) throws ParseException {
+    String tipo = "";
     if (jj_2_11(3)) {
       Slice();
     } else {
@@ -1803,8 +1803,9 @@ static String nome_variavel = "", nomeFunc = "";
         label_15:
         while (true) {
           jj_consume_token(86);
-          Expression();
+          tipo = Expression();
           jj_consume_token(87);
+        erroTipo("integer", tipo, t.toString());
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case 86:
             ;
@@ -2782,6 +2783,11 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_84() {
+    if (jj_scan_token(ATOMHEXADECIMAL)) return true;
+    return false;
+  }
+
   static private boolean jj_3_5() {
     if (jj_3R_23()) return true;
     return false;
@@ -2802,23 +2808,23 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_83() {
+    if (jj_scan_token(ATOMDECIMAL)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_74() {
     if (jj_scan_token(76)) return true;
     return false;
   }
 
-  static private boolean jj_3R_84() {
-    if (jj_scan_token(ATOMHEXADECIMAL)) return true;
+  static private boolean jj_3R_82() {
+    if (jj_scan_token(ATOMOCTAL)) return true;
     return false;
   }
 
   static private boolean jj_3R_73() {
     if (jj_scan_token(77)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_83() {
-    if (jj_scan_token(ATOMDECIMAL)) return true;
     return false;
   }
 
@@ -2834,6 +2840,11 @@ static String nome_variavel = "", nomeFunc = "";
 
   static private boolean jj_3R_29() {
     if (jj_3R_32()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_81() {
+    if (jj_scan_token(ATOMBINARY)) return true;
     return false;
   }
 
@@ -2855,36 +2866,8 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_82() {
-    if (jj_scan_token(ATOMOCTAL)) return true;
-    return false;
-  }
-
   static private boolean jj_3_1() {
     if (jj_3R_19()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_81() {
-    if (jj_scan_token(ATOMBINARY)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_76() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_58() {
-    if (jj_3R_63()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_55() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_58()) jj_scanpos = xsp;
-    if (jj_3R_59()) return true;
     return false;
   }
 
@@ -2893,8 +2876,18 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_76() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_79() {
     if (jj_scan_token(ATOMINTEGER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_58() {
+    if (jj_3R_63()) return true;
     return false;
   }
 
@@ -2917,6 +2910,14 @@ static String nome_variavel = "", nomeFunc = "";
     }
     }
     }
+    return false;
+  }
+
+  static private boolean jj_3R_55() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_58()) jj_scanpos = xsp;
+    if (jj_3R_59()) return true;
     return false;
   }
 
@@ -2991,13 +2992,18 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_89() {
+    if (jj_scan_token(73)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_31() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  static private boolean jj_3R_89() {
-    if (jj_scan_token(73)) return true;
+  static private boolean jj_3R_85() {
+    if (jj_3R_29()) return true;
     return false;
   }
 
@@ -3013,26 +3019,6 @@ static String nome_variavel = "", nomeFunc = "";
       xsp = jj_scanpos;
       if (jj_3R_47()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  static private boolean jj_3R_91() {
-    if (jj_scan_token(86)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_90() {
-    Token xsp;
-    if (jj_3R_91()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_91()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_85() {
-    if (jj_3R_29()) return true;
     return false;
   }
 
@@ -3060,15 +3046,15 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_48() {
-    if (jj_scan_token(80)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_25() {
     if (jj_scan_token(86)) return true;
     if (jj_3R_29()) return true;
     if (jj_scan_token(88)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_48() {
+    if (jj_scan_token(80)) return true;
     return false;
   }
 
@@ -3084,6 +3070,16 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_90() {
+    Token xsp;
+    if (jj_3R_91()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_91()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   static private boolean jj_3R_27() {
     if (jj_scan_token(75)) return true;
     return false;
@@ -3091,31 +3087,6 @@ static String nome_variavel = "", nomeFunc = "";
 
   static private boolean jj_3R_41() {
     if (jj_3R_48()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_37() {
-    if (jj_3R_40()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_41()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_11() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_88() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_90()) return true;
-    }
     return false;
   }
 
@@ -3134,6 +3105,16 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
+  static private boolean jj_3R_37() {
+    if (jj_3R_40()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_41()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   static private boolean jj_3R_22() {
     if (jj_3R_26()) return true;
     Token xsp;
@@ -3145,16 +3126,16 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_54() {
-    if (jj_scan_token(85)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_26() {
     if (jj_scan_token(IDENTIFIER)) return true;
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_30()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_54() {
+    if (jj_scan_token(85)) return true;
     return false;
   }
 
@@ -3165,6 +3146,26 @@ static String nome_variavel = "", nomeFunc = "";
 
   static private boolean jj_3_4() {
     if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_91() {
+    if (jj_scan_token(86)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_11() {
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_88() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_90()) return true;
+    }
     return false;
   }
 
@@ -3241,13 +3242,13 @@ static String nome_variavel = "", nomeFunc = "";
     return false;
   }
 
-  static private boolean jj_3R_87() {
-    if (jj_3R_89()) return true;
+  static private boolean jj_3_3() {
+    if (jj_3R_21()) return true;
     return false;
   }
 
-  static private boolean jj_3_3() {
-    if (jj_3R_21()) return true;
+  static private boolean jj_3R_87() {
+    if (jj_3R_89()) return true;
     return false;
   }
 

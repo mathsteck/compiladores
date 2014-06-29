@@ -972,10 +972,7 @@ String Lastexpr() :
     }
     |
     t = <IDENTIFIER>
-    (Variable()
-    {
-        return "";
-    }
+    (Variable(t)
     |
     Callf(t)
     {
@@ -999,7 +996,17 @@ String Lastexpr() :
         return s;
     }
 }
-void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
+void Variable(Token t) :
+{
+    String tipo = "";
+}
+{
+    (LOOKAHEAD(3) Slice() | (
+    "["tipo = Expression()"]"
+    {
+        erroTipo("integer", tipo, t.toString());
+    })+)
+}
 String Varexp() :
 {
     Token t;
