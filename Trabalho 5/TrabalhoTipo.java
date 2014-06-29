@@ -15,7 +15,7 @@ static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null, tipo = null;
 static Integer erro_s = 0;
-static String nome_variavel = "";
+static String nome_variavel = "", nomeFunc = "";
 
     public static void main(String[] args){
         try{
@@ -501,9 +501,9 @@ static String nome_variavel = "";
     s = Expression();
     jj_consume_token(TO);
     g = Expression();
-                x = checaTipoFluxo(t);
-                erroTipo(x, s, t.toString());
-                erroTipo(x, g, t.toString());
+        x = checaTipoFluxo(t);
+        erroTipo(x, s, t.toString());
+        erroTipo(x, g, t.toString());
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BY:
       jj_consume_token(BY);
@@ -517,11 +517,11 @@ static String nome_variavel = "";
       jj_la1[20] = jj_gen;
       ;
     }
-                if(!x.equals("atom") && !x.equals("integer")) {
+        if(!x.equals("atom") && !x.equals("integer")) {
             erro_s++;
             System.out.println("ERRO! O ciclo esperava o tipo \u005c"atom\u005c" mas recebeu \u005c"" + x + "\u005c".");
         }
-                if(!s.equals("atom") && !s.equals("integer")) {
+        if(!s.equals("atom") && !s.equals("integer")) {
             erro_s++;
             System.out.println("ERRO! O ciclo esperava o tipo \u005c"atom\u005c" mas recebeu \u005c"" + s + "\u005c".");
         }
@@ -993,7 +993,7 @@ static String nome_variavel = "";
 
   static final public void Assignwithop() throws ParseException {
     String tipo_esq, tipo_dir;
-        Token op;
+    Token op;
     tipo_esq = Varexp();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 76:
@@ -1018,18 +1018,26 @@ static String nome_variavel = "";
     }
     jj_consume_token(72);
     tipo_dir = Expression();
-                tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
-                erroTipo(tipo_esq, tipo_dir, nome_variavel);
+        tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
+        erroTipo(tipo_esq, tipo_dir, nome_variavel);
         nome_variavel = "";
   }
 
   static final public void Return() throws ParseException {
+    String tipo;
     if(flagBranchStmt == 0)
         nReturn++;
 
     procedureReturn++;
     jj_consume_token(RETURN);
-    Expression();
+    tipo = Expression();
+        if(!nomeFunc.equals("")) {
+            Dado func = buscaIdentificador(TabelaSimb, nomeFunc, 0);
+            Integer chave = buscaTipo(TabelaSimb, tipo);
+            if(chave > -1) {
+                func.setTipo(chave);
+            }
+        }
   }
 
   static final public void Vardeclare() throws ParseException {
@@ -1334,6 +1342,7 @@ static String nome_variavel = "";
         dado.setCategoria(t.toString());
 
         insereTabela(TabelaSimb, dado);
+        nomeFunc = s.toString();
         listaChaves.clear();
         nivelCorrente++;
     jj_consume_token(73);
@@ -1384,6 +1393,7 @@ static String nome_variavel = "";
         }
         nReturn = 0;
         removeNivel(TabelaSimb, nivelCorrente);
+        nomeFunc = "";
         listaChaves.clear();
         nivelCorrente--;
   }
@@ -1729,14 +1739,12 @@ static String nome_variavel = "";
       break;
     case 73:
       jj_consume_token(73);
-      Expression();
+      s = Expression();
       jj_consume_token(74);
-        {if (true) return "";}
+        {if (true) return s;}
       break;
     case IDENTIFIER:
       t = jj_consume_token(IDENTIFIER);
-        s = checaTipoFluxo(t);
-        {if (true) return s;}
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 73:
       case 86:
@@ -1758,7 +1766,8 @@ static String nome_variavel = "";
             System.out.println("Erro! O procedure \u005c"" + t.toString() + "\u005c" n\ufffdo retorna nenhum valor.\u005cn");
             erro_s++;
         }
-        {if (true) return "";}
+        Dado func = buscaIdentificador(TabelaSimb, t.toString(), 0);
+        {if (true) return TabelaSimb.get(func.getTipo()).getIdentificador();}
           break;
         default:
           jj_la1[66] = jj_gen;
@@ -1771,7 +1780,8 @@ static String nome_variavel = "";
         ;
       }
         naoDeclaradoFluxo(t);
-        {if (true) return "";}
+        s = checaTipoFluxo(t);
+        {if (true) return s;}
       break;
     default:
       jj_la1[68] = jj_gen;
@@ -1812,11 +1822,11 @@ static String nome_variavel = "";
 
   static final public String Varexp() throws ParseException {
     Token t;
-        String s;
+    String s;
     t = jj_consume_token(IDENTIFIER);
-                nome_variavel = t.toString();
-                s = checaTipoFluxo(t);
-                {if (true) return s;}
+        nome_variavel = t.toString();
+        s = checaTipoFluxo(t);
+        {if (true) return s;}
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 86:
       if (jj_2_12(3)) {
@@ -2021,14 +2031,14 @@ static String nome_variavel = "";
    ArrayList <Dado> lista = d.getArgs();
    String s, v;
     s = Expression();
-        if(!lista.isEmpty())
-        {
-            Integer chave = lista.get(countArgs).getTipo();
-            v = TabelaSimb.get(chave).getIdentificador();
+    if(!lista.isEmpty())
+    {
+        Integer chave = lista.get(countArgs).getTipo();
+        v = TabelaSimb.get(chave).getIdentificador();
 
-            erroTipo(v, s, t.toString());
-        }
-        countArgs++;
+        erroTipo(v, s, t.toString());
+    }
+    countArgs++;
     label_18:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2041,11 +2051,11 @@ static String nome_variavel = "";
       }
       jj_consume_token(75);
       s = Expression();
-        Integer chave = lista.get(countArgs).getTipo();
-        v = TabelaSimb.get(chave).getIdentificador();
+    Integer chave = lista.get(countArgs).getTipo();
+    v = TabelaSimb.get(chave).getIdentificador();
 
-        erroTipo(v, s, t.toString());
-        countArgs++;
+    erroTipo(v, s, t.toString());
+    countArgs++;
     }
   }
 
@@ -2607,10 +2617,10 @@ static String nome_variavel = "";
   }
 
   static final public String checaTipoFluxo(Token t) throws ParseException {
-        Dado temp;
+    Dado temp;
     Dado dado_tipo;
     Integer chave;
-                // Se n�o est� dentro de um branch (if, for, etc)
+        // Se n�o est� dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
 
             temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
@@ -2627,7 +2637,6 @@ static String nome_variavel = "";
             if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
                 int i = 0;
                 for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
-
                 if(i != 0){
                     temp = buscaIdentificador(TabelaAux, t.toString(), i);
                     chave = temp.getTipo();
@@ -2732,51 +2741,13 @@ static String nome_variavel = "";
     finally { jj_save(11, xla); }
   }
 
-  static private boolean jj_3R_66() {
-    if (jj_3R_76()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_5() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_65() {
-    if (jj_scan_token(BIN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_39() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_43()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(45)) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_43() {
-    if (jj_scan_token(AND)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_64() {
     if (jj_3R_75()) return true;
     return false;
   }
 
-  static private boolean jj_3_6() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_9() {
-    if (jj_3R_21()) return true;
+  static private boolean jj_3_5() {
+    if (jj_3R_23()) return true;
     return false;
   }
 
@@ -2812,11 +2783,6 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3_1() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_32() {
     if (jj_3R_34()) return true;
     Token xsp;
@@ -2827,8 +2793,13 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3R_75() {
-    if (jj_scan_token(STRING)) return true;
+  static private boolean jj_3_6() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_9() {
+    if (jj_3R_21()) return true;
     return false;
   }
 
@@ -2839,6 +2810,11 @@ static String nome_variavel = "";
 
   static private boolean jj_3R_83() {
     if (jj_scan_token(ATOMHEXADECIMAL)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_19()) return true;
     return false;
   }
 
@@ -2854,6 +2830,11 @@ static String nome_variavel = "";
 
   static private boolean jj_3R_82() {
     if (jj_scan_token(ATOMDECIMAL)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_75() {
+    if (jj_scan_token(STRING)) return true;
     return false;
   }
 
@@ -2882,12 +2863,6 @@ static String nome_variavel = "";
 
   static private boolean jj_3R_80() {
     if (jj_scan_token(ATOMBINARY)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_24() {
-    if (jj_scan_token(ELSIF)) return true;
-    if (jj_3R_29()) return true;
     return false;
   }
 
@@ -2936,6 +2911,12 @@ static String nome_variavel = "";
     return false;
   }
 
+  static private boolean jj_3R_24() {
+    if (jj_scan_token(ELSIF)) return true;
+    if (jj_3R_29()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_70() {
     if (jj_scan_token(78)) return true;
     return false;
@@ -2961,11 +2942,6 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3_10() {
-    if (jj_3R_24()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_45() {
     if (jj_3R_54()) return true;
     Token xsp;
@@ -2978,6 +2954,11 @@ static String nome_variavel = "";
 
   static private boolean jj_3R_28() {
     if (jj_3R_31()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_10() {
+    if (jj_3R_24()) return true;
     return false;
   }
 
@@ -3016,6 +2997,16 @@ static String nome_variavel = "";
     return false;
   }
 
+  static private boolean jj_3R_40() {
+    if (jj_3R_45()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_46()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   static private boolean jj_3R_90() {
     if (jj_scan_token(86)) return true;
     return false;
@@ -3027,16 +3018,6 @@ static String nome_variavel = "";
     while (true) {
       xsp = jj_scanpos;
       if (jj_3R_90()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_40() {
-    if (jj_3R_45()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_46()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -3070,14 +3051,14 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3R_27() {
-    if (jj_scan_token(75)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_23() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_3R_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_47() {
+    if (jj_scan_token(80)) return true;
     return false;
   }
 
@@ -3088,19 +3069,8 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3R_47() {
-    if (jj_scan_token(80)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_22() {
-    if (jj_3R_26()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_27()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(72)) return true;
+  static private boolean jj_3R_27() {
+    if (jj_scan_token(75)) return true;
     return false;
   }
 
@@ -3115,13 +3085,18 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3_11() {
-    if (jj_3R_25()) return true;
+  static private boolean jj_3R_37() {
+    if (jj_3R_40()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_41()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
-  static private boolean jj_3_4() {
-    if (jj_3R_22()) return true;
+  static private boolean jj_3_11() {
+    if (jj_3R_25()) return true;
     return false;
   }
 
@@ -3135,13 +3110,14 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3R_37() {
-    if (jj_3R_40()) return true;
+  static private boolean jj_3R_22() {
+    if (jj_3R_26()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_41()) { jj_scanpos = xsp; break; }
+      if (jj_3R_27()) { jj_scanpos = xsp; break; }
     }
+    if (jj_scan_token(72)) return true;
     return false;
   }
 
@@ -3157,6 +3133,29 @@ static String nome_variavel = "";
 
   static private boolean jj_3_12() {
     if (jj_3R_25()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_4() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_53() {
+    if (jj_scan_token(85)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_26() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_30()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_52() {
+    if (jj_scan_token(72)) return true;
     return false;
   }
 
@@ -3180,26 +3179,18 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3R_53() {
-    if (jj_scan_token(85)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_26() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_30()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_52() {
-    if (jj_scan_token(72)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_51() {
     if (jj_scan_token(84)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_50() {
+    if (jj_scan_token(83)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_49() {
+    if (jj_scan_token(82)) return true;
     return false;
   }
 
@@ -3211,21 +3202,6 @@ static String nome_variavel = "";
 
   static private boolean jj_3_8() {
     if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_50() {
-    if (jj_scan_token(83)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_3() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_49() {
-    if (jj_scan_token(82)) return true;
     return false;
   }
 
@@ -3256,6 +3232,11 @@ static String nome_variavel = "";
     return false;
   }
 
+  static private boolean jj_3_3() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_86() {
     if (jj_3R_88()) return true;
     return false;
@@ -3276,18 +3257,8 @@ static String nome_variavel = "";
     return false;
   }
 
-  static private boolean jj_3_7() {
-    if (jj_3R_20()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_38() {
     if (jj_3R_42()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_3R_20()) return true;
     return false;
   }
 
@@ -3317,6 +3288,44 @@ static String nome_variavel = "";
   static private boolean jj_3R_67() {
     if (jj_scan_token(73)) return true;
     if (jj_3R_29()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_7() {
+    if (jj_3R_20()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_66() {
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
+    if (jj_3R_20()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_65() {
+    if (jj_scan_token(BIN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_39() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_43()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(45)) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_43() {
+    if (jj_scan_token(AND)) return true;
     return false;
   }
 
@@ -3536,18 +3545,21 @@ static String nome_variavel = "";
       for (int i = 0; i < jj_endpos; i++) {
         jj_expentry[i] = jj_lasttokens[i];
       }
-      jj_entries_loop: for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
+      boolean exists = false;
+      for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
+        exists = true;
         int[] oldentry = (int[])(it.next());
         if (oldentry.length == jj_expentry.length) {
           for (int i = 0; i < jj_expentry.length; i++) {
             if (oldentry[i] != jj_expentry[i]) {
-              continue jj_entries_loop;
+              exists = false;
+              break;
             }
           }
-          jj_expentries.add(jj_expentry);
-          break jj_entries_loop;
+          if (exists) break;
         }
       }
+      if (!exists) jj_expentries.add(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }

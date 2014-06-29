@@ -16,7 +16,7 @@ static String flagCategoria = "";
 static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
 static Token valor = null, tipo = null;
 static Integer erro_s = 0;
-static String nome_variavel = "";
+static String nome_variavel = "", nomeFunc = "";
 
     public static void main(String[] args){
         try{
@@ -184,11 +184,11 @@ void Foridx() :
         naoDeclaradoFluxo(t);
     }
     "=" s = Expression() <TO>  g = Expression()
-	{
-		x = checaTipoFluxo(t);
-		erroTipo(x, s, t.toString());
-		erroTipo(x, g, t.toString());
-	}
+    {
+        x = checaTipoFluxo(t);
+        erroTipo(x, s, t.toString());
+        erroTipo(x, g, t.toString());
+    }
     ( <BY> h = Expression()
     {
         if(!h.equals("atom") && !h.equals("integer")) {
@@ -197,11 +197,11 @@ void Foridx() :
         }
     })?
     {
-		if(!x.equals("atom") && !x.equals("integer")) {
+        if(!x.equals("atom") && !x.equals("integer")) {
             erro_s++;
             System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + x + "\".");
         }        
-		if(!s.equals("atom") && !s.equals("integer")) {
+        if(!s.equals("atom") && !s.equals("integer")) {
             erro_s++;
             System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + s + "\".");
         }
@@ -367,13 +367,13 @@ void Switchtest() :
 {
     <SWITCH>
     t = Expression()
-	{
+    {
         if(t.equals("sequence") || t.equals("object")) {
             erro_s++;
             System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
         }
-	}
-	(Labelstmt())? <DO>
+    }
+    (Labelstmt())? <DO>
     {
         flagBranchStmt++;
     }
@@ -420,26 +420,36 @@ void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Express
 void Assignwithop() : 
 {
     String tipo_esq, tipo_dir;
-	Token op;
+    Token op;
 } 
 { 
-	tipo_esq = Varexp() ( op = "+" | op = "-" | op = "/" | op = "*" | op = "&" ) "=" tipo_dir = Expression()
-	{ 
-		tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
-		erroTipo(tipo_esq, tipo_dir, nome_variavel);
+    tipo_esq = Varexp() ( op = "+" | op = "-" | op = "/" | op = "*" | op = "&" ) "=" tipo_dir = Expression()
+    { 
+        tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
+        erroTipo(tipo_esq, tipo_dir, nome_variavel);
         nome_variavel = "";
-	}
+    }
 }
 
 void Return() :
 {
+    String tipo;
     if(flagBranchStmt == 0)
         nReturn++;
 
     procedureReturn++;
 }
 {
-    <RETURN> Expression()
+    <RETURN> tipo = Expression()
+    {
+        if(!nomeFunc.equals("")) {
+            Dado func = buscaIdentificador(TabelaSimb, nomeFunc, 0);
+            Integer chave = buscaTipo(TabelaSimb, tipo);
+            if(chave > -1) {
+                func.setTipo(chave);
+            }
+        }
+    }
 }
 void Vardeclare() :
 {
@@ -657,6 +667,7 @@ void Funcdeclare() :
         dado.setCategoria(t.toString());
 
         insereTabela(TabelaSimb, dado);
+        nomeFunc = s.toString();
         listaChaves.clear();
         nivelCorrente++;
     }
@@ -673,13 +684,13 @@ void Funcdeclare() :
     (Block())?
     <END> <FUNCTION>
     {
-
         if(nReturn < 1){
             System.out.println("Erro! Function precisa de retorno!");
             erro_s++;
         }
         nReturn = 0;
         removeNivel(TabelaSimb, nivelCorrente);
+        nomeFunc = "";
         listaChaves.clear();
         nivelCorrente--;
     }
@@ -948,16 +959,12 @@ String Lastexpr() :
         return "sequence";
     }
     |
-    "("Expression()")"
+    "("s = Expression()")"
     {
-        return "";
+        return s;
     }
     |
     t = <IDENTIFIER>
-    {
-        s = checaTipoFluxo(t);
-        return s;
-    }
     (Variable()
     {
         return "";
@@ -976,27 +983,29 @@ String Lastexpr() :
             System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
             erro_s++;
         }
-        return "";
+        Dado func = buscaIdentificador(TabelaSimb, t.toString(), 0);
+        return TabelaSimb.get(func.getTipo()).getIdentificador();
     })?
     {
         naoDeclaradoFluxo(t);
-        return "";
+        s = checaTipoFluxo(t);
+        return s;
     }
 }
 void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
 String Varexp() :
 {
     Token t;
-	String s;
+    String s;
 }
 {
     t = <IDENTIFIER> 
-	{
-		nome_variavel = t.toString();
-		s = checaTipoFluxo(t);
-		return s;
-	}
-	( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
+    {
+        nome_variavel = t.toString();
+        s = checaTipoFluxo(t);
+        return s;
+    }
+    ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
     {
 
         naoDeclaradoFluxo(t);
@@ -1027,7 +1036,9 @@ void Call() :
         countArgs = 0;
     }
 }
-void Callf(Token t) : {}
+void Callf(Token t) :
+{
+}
 {
     "(" (Arglist(t))? ")"
     {
@@ -1049,22 +1060,22 @@ void Arglist(Token t) :
 {
     s = Expression() 
     {
-	if(!lista.isEmpty())
-	{
-	    Integer chave = lista.get(countArgs).getTipo();
-	    v = TabelaSimb.get(chave).getIdentificador();
+    if(!lista.isEmpty())
+    {
+        Integer chave = lista.get(countArgs).getTipo();
+        v = TabelaSimb.get(chave).getIdentificador();
 
-	    erroTipo(v, s, t.toString());
-	}
-	countArgs++;
+        erroTipo(v, s, t.toString());
+    }
+    countArgs++;
     }
     ("," s = Expression()
     {
-	Integer chave = lista.get(countArgs).getTipo();
-	v = TabelaSimb.get(chave).getIdentificador();
+    Integer chave = lista.get(countArgs).getTipo();
+    v = TabelaSimb.get(chave).getIdentificador();
 
-	erroTipo(v, s, t.toString());
-	countArgs++;
+    erroTipo(v, s, t.toString());
+    countArgs++;
     })*
 }
 void Objexpr() : {}
@@ -1683,15 +1694,15 @@ void initBuiltins(): {}
 
 String checaTipoFluxo(Token t) :
 {
-	Dado temp;
+    Dado temp;
     Dado dado_tipo;
     Integer chave;
 }
 {
     {
-		// Se não está dentro de um branch (if, for, etc)
+        // Se não está dentro de um branch (if, for, etc)
         if(flagBranchStmt == 0) {
-			
+
             temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
             if(temp != null){
                 chave = temp.getTipo();
@@ -1706,7 +1717,6 @@ String checaTipoFluxo(Token t) :
             if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
                 int i = 0;
                 for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
-				
                 if(i != 0){
                     temp = buscaIdentificador(TabelaAux, t.toString(), i);
                     chave = temp.getTipo();
@@ -1723,7 +1733,6 @@ String checaTipoFluxo(Token t) :
                 dado_tipo = TabelaSimb.get(chave);
                 return dado_tipo.getIdentificador();
             }
-        }        
-
+        }
     }
 }
