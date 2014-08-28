@@ -1,0 +1,164 @@
+Java Compiler Compiler Version 5.0 (Parser Generator)
+(type "javacc" with no arguments for help)
+Reading from file TrabalhoTipo.jj . . .
+File "Token.java" is being rebuilt.
+File "SimpleCharStream.java" is being rebuilt.
+Parser generated with 0 errors and 2 warnings.
+====================CORRECT================
+Testing arit_operation_correct_test.epy ...
+SUCESSO
+
+Testing concat_operation_correct_test.epy ...
+SUCESSO
+
+Testing declar_assign_correct_test.epy ...
+SUCESSO
+
+Testing for_correct_test.epy ...
+SUCESSO
+
+Testing foreach_correct_test.epy ...
+SUCESSO
+
+Testing function_correct_test.epy ...
+SUCESSO
+
+Testing if_correct_test.epy ...
+SUCESSO
+
+Testing logic_operation_correct_test.epy ...
+SUCESSO
+
+Testing loop_correct_test.epy ...
+SUCESSO
+
+Testing procedure_correct_test.epy ...
+SUCESSO
+
+Testing rel_operation_correct_test.epy ...
+SUCESSO
+
+Testing type_correct_test.epy ...
+SUCESSO
+
+Testing while_correct_test.epy ...
+SUCESSO
+
+====================ERROR==================
+Testing assign_error_test.epy ...
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "sequence".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "e" esperava o tipo "sequence" mas recebeu "object".
+Foram encontrados 10 erros
+
+Testing declar_error_test.epy ...
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "b" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "d" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "e" esperava o tipo "sequence" mas recebeu "integer".
+ERRO! A variavel "f" esperava o tipo "sequence" mas recebeu "atom".
+Foram encontrados 6 erros
+
+Testing foreach_error_test.epy ...
+ERRO! A variavel "a" esperava o tipo "sequence" mas recebeu "integer".
+Foram encontrados 1 erros
+
+Testing for_error_test.epy ...
+ERRO! A variavel "i" esperava o tipo "integer" mas recebeu "sequence".
+ERRO! A variavel "i" esperava o tipo "integer" mas recebeu "object".
+ERRO! O ciclo esperava o tipo "atom" mas recebeu "sequence".
+ERRO! O ciclo esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "i" esperava o tipo "integer" mas recebeu "sequence".
+ERRO! O ciclo esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+Foram encontrados 16 erros
+
+Testing function_error_test.epy ...
+ERRO! A variavel "n" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "m" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "integer".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "integer".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "bar" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "sequence".
+Foram encontrados 11 erros
+
+Testing if_error_test.epy ...
+ERRO! A condicional esperava o tipo "boolean" (atom) mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A condicional esperava o tipo "boolean" (atom) mas recebeu "sequence".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+Foram encontrados 10 erros
+
+Testing loop_error_test.epy ...
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+ERRO! O ciclo esperava o tipo atom mas recebeu "object".
+ERRO! O ciclo esperava o tipo atom mas recebeu "sequence".
+Foram encontrados 10 erros
+
+Testing procedure_error_test.epy ...
+ERRO! A variavel "n" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "m" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "integer".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "integer".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "bar" esperava o tipo "atom" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "bar" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "bar" esperava o tipo "integer" mas recebeu "sequence".
+Foram encontrados 11 erros
+
+Testing type_error_test.epy ...
+Erro! Variavel "d" nao declarada no nivel atual!
+Erro! Variavel "d" nao declarada no nivel atual!
+Foram encontrados 2 erros
+
+Testing while_error_test.epy ...
+ERRO! O ciclo esperava o tipo "boolean" (atom) mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "atom".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "sequence".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "atom".
+ERRO! A variavel "s" esperava o tipo "sequence" mas recebeu "object".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! O ciclo esperava o tipo "boolean" (atom) mas recebeu "sequence".
+ERRO! A variavel "a" esperava o tipo "integer" mas recebeu "object".
+ERRO! A variavel "c" esperava o tipo "atom" mas recebeu "object".
+Foram encontrados 10 erros
+

@@ -1,0 +1,7 @@
+integer a = 5, c
+atom b = 4
+
+a += b + c
+a -= b + c
+a *= b * (c + b)
+a /= b

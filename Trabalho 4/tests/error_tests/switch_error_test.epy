@@ -1,0 +1,15 @@
+integer d
+
+switch x do --ERRO (x nao declarado)
+	case a, b then --ERRO (a, b nao declarados)
+		?1
+		integer z
+	case c then --ERRO (c nao declarado)
+		z = 0
+		integer d --ERRO (d ja declarado)
+	else
+		integer z --ERRO (z ja declarado)
+		d = z
+end switch
+
+z = 0 --ERRO (z nao declarado)

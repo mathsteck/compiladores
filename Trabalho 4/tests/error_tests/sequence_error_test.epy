@@ -1,0 +1,5 @@
+sequence s = 2
+sequence s	--ERRO (ja declarado)
+
+
+

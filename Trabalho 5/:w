@@ -1,0 +1,1762 @@
+PARSER_BEGIN (TrabalhoTipo)
+
+import java.util.*;
+
+public class TrabalhoTipo{
+
+static Hashtable<Integer, Dado> TabelaSimb = new Hashtable<Integer, Dado>();
+static Hashtable<Integer, Dado> TabelaAux = new Hashtable<Integer, Dado>();
+static Integer indexTabela = 0;
+static Integer nivelCorrente = 0;
+static Integer flagBranchStmt = 0;
+static Integer nReturn = 0, procedureReturn = 0;
+static Integer countArgs = 0;
+static Dado dado = new Dado(), sequencia = new Dado();
+static String flagCategoria = "";
+static ArrayList <Integer> listaChaves = new ArrayList <Integer> ();
+static Token valor = null, tipo = null;
+static Integer erro_s = 0;
+static String nome_variavel = "", nomeFunc = "";
+
+    public static void main(String[] args){
+        try{
+            TrabalhoTipo t = new TrabalhoTipo(new java.io.FileInputStream(args[0]));
+            t.initBuiltins();
+            t.Start();
+            System.out.println("-----------------------------------SIMB----------------------------------");
+            imprimeTabela(TabelaSimb);
+//            System.out.println("-----------------------------------AUX-----------------------------------");
+//            imprimeTabela(TabelaAux);
+            if(erro_s == 0)
+                System.out.println("SUCESSO");
+            else
+                System.out.println("Foram encontrados " + erro_s + " erros");
+        } catch (java.io.FileNotFoundException ex) {
+            System.out.println("Arquivo " + args[0] + " nao foi encontrado");
+        } catch (ParseException ex) {
+            System.out.println(ex.getMessage());
+        } catch (TokenMgrError ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+}
+
+PARSER_END (TrabalhoTipo)
+
+/* Eliminando comentarios e espacos */
+SKIP: {" "|"\r"|"\n"|"\t"}
+SKIP: {"/*" : BLOCKCOMMENT}
+<BLOCKCOMMENT> SKIP:{"*/" : DEFAULT}
+<BLOCKCOMMENT> MORE:{<~[]>}
+SKIP: { <LINECOMMENT: "--" (~["\n"])*>}
+
+/* Palavras reservadas*/
+TOKEN: { <ELSE: "else"> }
+TOKEN: { <IF: "if"> }
+TOKEN: { <ELSIF: "elsif"> }
+TOKEN: { <WHILE: "while"> }
+TOKEN: { <BREAK: "break"> }
+TOKEN: { <RETURN: "return"> }
+TOKEN: { <FOR: "for"> }
+TOKEN: { <FOREACH: "foreach"> }
+TOKEN: { <FUNCTION: "function"> }
+TOKEN: { <TYPE: "type"> }
+TOKEN: { <PROCEDURE: "procedure"> }
+TOKEN: { <CONSTANT: "constant"> }
+TOKEN: { <ENUM: "enum"> }
+TOKEN: { <BY: "by"> }
+TOKEN: { <SWITCH: "switch"> }
+TOKEN: { <DO: "do">}
+TOKEN: { <THEN: "then">}
+TOKEN: { <CASE: "case"> }
+TOKEN: { <CONTINUE: "continue"> }
+TOKEN: { <RETRY: "retry"> }
+TOKEN: { <EXIT: "exit"> }
+TOKEN: { <TO: "to">}
+TOKEN: { <PROFILE: "profile"> }
+TOKEN: { <PROFILE_TIME: "profile_time"> }
+TOKEN: { <TRACE: "trace"> }
+TOKEN: { <BATCH: "batch"> }
+TOKEN: { <TYPE_CHECK: "type_check"> }
+TOKEN: { <INLINE: "inline"> }
+TOKEN: { <WARNING: "warning"> }
+TOKEN: { <SAVE: "save"> }
+TOKEN: { <RESTORE: "restore"> }
+TOKEN: { <STRICT: "strict"> }
+TOKEN: { <LOOP: "loop"> }
+TOKEN: { <GOTO: "goto"> }
+TOKEN: { <NOT: "not"> }
+TOKEN: { <AND: "and"> }
+TOKEN: { <OR: "or"> }
+TOKEN: { <XOR: "xor"> }
+TOKEN: { <AS: "as"> }
+TOKEN: { <LABEL: "label"> }
+TOKEN: { <UNTIL: "until"> }
+TOKEN: { <DOLAR: "$"> }
+TOKEN: { <END: "end"> }
+/* Identificadores */
+TOKEN: { <#FUNCBUILT: "puts"|"print"|"lenght"|"printf"|"getc"|"find"
+         |"sprintf"|"rand"|"sqrt"|"cos"|"sin" |"tan" |"log"|"power">}
+TOKEN: { <#ALPHA: ["a"-"z"] | ["A"-"Z"]> }
+TOKEN: { <#DIGITDEC: ["0"-"9"]> }
+TOKEN: { <#DIGITHEX: ["0"-"9"] | ["A"-"F"]> }
+TOKEN: { <#DIGITOCT: ["0"-"7"]> }
+TOKEN: { <#DIGITBIN: ["0"-"1"]> }
+TOKEN: { <#USCORE: "_"> }
+TOKEN: { <SYMBOL: ["!"] | ["#"] | ["%"] | [":"-";"] | ["@"] | ["^"] | ["`"] | ["|"] | ["~"]> }
+TOKEN: { <#CHAR: ( <SYMBOL> | <ALPHA> | <DIGITDEC>  ) > }
+TOKEN: { <#ESCCHAR: ["\0"-"\b"] | ["\f"-"\r"]> }
+TOKEN:
+{
+    <STRING:
+        (("\""( "\\n" | <CHAR> | " " | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX> | "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\""
+        | "\'"( "\\n" | <CHAR> | " " | <ESCCHAR> |  <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>| "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\'"
+        | "\"\"\"" ("\\n"| <CHAR> | " " | <ESCCHAR> | <USCORE> | "\\x"<DIGITHEX><DIGITHEX> | "\\u"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>| "\\U"<DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX><DIGITHEX>)* "\"\"\""))
+        | ("b\""(<DIGITBIN> | " " | <USCORE>)+ "\"")
+        |("x\""(<DIGITHEX> | " " | <USCORE>)+ "\"") >
+}
+TOKEN: { <IDENTIFIER: (<ALPHA>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | (<USCORE>)(<ALPHA> | <DIGITDEC> | <USCORE>)* | "atom" | "integer" | "sequence" | "object" | <FUNCBUILT> > }
+TOKEN: { <ATOMINTEGER: ("-")?(<DIGITDEC>)+ | ("-")?(<DIGITHEX>)+ | ("-")?(<DIGITOCT>)+| ("-")?(<DIGITBIN>)+ | ("-")?(<DIGITDEC>)"e"("+"|"-")?(<DIGITDEC>)+> }
+TOKEN: { <ATOMREAL: (<DIGITDEC>)+"."(<DIGITDEC>)+> }
+TOKEN: { <ATOMBINARY: "0b"(<DIGITBIN>)+> }
+TOKEN: { <ATOMOCTAL: "0t"(<DIGITBIN>)+> }
+TOKEN: { <ATOMDECIMAL: "0d"(<DIGITBIN>)+> }
+TOKEN: { <ATOMHEXADECIMAL: "0x"(<DIGITBIN>)+> }
+TOKEN: { <BIN: <DIGITBIN> > }
+
+/* Programa */
+void Start() : {} { Stmtblk() <EOF> }
+void Stmtblk() : {} { Statement() (Statement())* }
+void Block() : {} { Statementblock() (Statementblock())* }
+void Statement() : {}
+{
+    Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt() | Whilestmt()
+    | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Look()
+}
+void Statementblock() : {}
+{
+    Breakstmt() | Return() | Continuestmt() | Retrystmt() | Exitstmt() | Forstmt() | Foreachstmt()
+    | Whilestmt() | Loopstmt() | Gotostmt() | Ifstmt() | Switchstmt() | Lookblock()
+}
+void Look() : {}
+{
+    "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Assignmono() | LOOKAHEAD(2) Assignmulti() | Procdeclare()
+    | Funcdeclare() | Typedeclare() | LOOKAHEAD(2) Vardeclare() | Constdeclare() | Enumdeclare()
+}
+void Lookblock() : {}
+{
+    "?" Expression() | LOOKAHEAD(2) Assignwithop() | LOOKAHEAD(2) Call() | LOOKAHEAD(2) Vardeclare() | Constdeclare()
+    | Enumdeclare() | LOOKAHEAD(2) Assignmono() | Assignmulti()
+}
+void Breakstmt() : {} { <BREAK> (Stringlit() | Atomexpr())? }
+void Continuestmt(): {} { <CONTINUE> (Stringlit()| Atomexpr())? }
+void Retrystmt(): {} { <RETRY> (Stringlit()| Atomexpr())? }
+void Exitstmt(): {} { <EXIT> (Stringlit()| Atomexpr())? }
+String Stringlit() : {}
+{
+    <STRING>
+    {
+        return "object";
+    }
+}
+void Forstmt() : {}
+{
+    <FOR> Foridx()
+    (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    (Block())?
+    <END> <FOR>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+void Foridx() :
+{
+    Token t;
+    String s, g, h = "", x;
+}
+{   t = <IDENTIFIER>
+    {
+        naoDeclaradoFluxo(t);
+    }
+    "=" s = Expression() <TO>  g = Expression()
+    {
+        x = checaTipoFluxo(t);
+        erroTipo(x, s, t.toString());
+        erroTipo(x, g, t.toString());
+    }
+    ( <BY> h = Expression()
+    {
+        if(!h.equals("atom") && !h.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + h + "\".");
+        }
+    })?
+    {
+        if(!x.equals("atom") && !x.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + x + "\".");
+        }        
+        if(!s.equals("atom") && !s.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + s + "\".");
+        }
+        if(!g.equals("atom") && !g.equals("integer")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"atom\" mas recebeu \"" + g + "\".");
+        }
+    }
+}
+void Foreachstmt() : 
+{
+    Token t;
+}
+{
+    <FOREACH>
+    (t = <IDENTIFIER>
+    {
+        naoDeclaradoFluxo(t);
+    })? "(" ( t = <IDENTIFIER>
+    {
+        // FIXME t só pode ser sequence
+        naoDeclaradoFluxo(t);
+    }
+    |
+    Seqexpr() ) ")" (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    (Block())?
+    <END> <FOREACH>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+void Labelstmt() : {} { <LABEL> Stringlit() }
+void Whilestmt() :
+{
+    String t;
+}
+{
+    <WHILE>
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    (Block())?
+    <END> <WHILE>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+void Loopstmt() :
+{
+    String t;
+}
+{
+    <LOOP> (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+    Block() <UNTIL>
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo atom mas recebeu \"" + t + "\".");
+        }
+    }
+    <END> <LOOP>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+void Gotostmt() : {} { <GOTO> Labelstmt() }
+
+void Ifstmt() : {}
+{
+    Iftest()
+    (LOOKAHEAD(2) Elsif())* ( Else())?
+    <END> <IF>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+
+void Iftest() :
+{
+    String t;
+}
+{
+    <IF> t = Expression() (Labelstmt())? <THEN>
+    {
+        flagBranchStmt++;
+
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (Block())?
+}
+
+void Elsif() :
+{
+    String t;
+}
+{
+    <ELSIF>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    t = Expression()
+    {
+        if(!t.equals("atom")) {
+            erro_s++;
+            System.out.println("ERRO! O ciclo esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    <THEN> ( Block())?
+}
+void Else() : {}
+{
+    <ELSE>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+    }
+    (Block())?
+}
+
+void Switchstmt() : {}
+{
+    Switchtest()
+    (Case())+ (Caseelse())?
+    <END> <SWITCH>
+    {
+        removeNivel(TabelaAux, flagBranchStmt);
+        listaChaves.clear();
+        flagBranchStmt--;
+    }
+}
+
+void Switchtest() :
+{
+    String t;
+}
+{
+    <SWITCH>
+    t = Expression()
+    {
+        if(t.equals("sequence") || t.equals("object")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (Labelstmt())? <DO>
+    {
+        flagBranchStmt++;
+    }
+}
+
+void Case() : {} { <CASE>Caselist() <THEN> (Block())? }
+void Caselist() :
+{
+    String t;
+}
+{
+    t = Expression()
+    {
+        if(t.equals("sequence") || t.equals("object")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    }
+    (","
+    t = Expression()
+    {
+        if(t.equals("sequence") || t.equals("object")) {
+            erro_s++;
+            System.out.println("ERRO! A condicional esperava o tipo \"boolean\" (atom) mas recebeu \"" + t + "\".");
+        }
+    })*
+}
+
+void Caseelse() : {} { <ELSE> (Block())? }
+void Assignmono() : 
+{
+    String tipo_esq, tipo_dir; 
+}
+{
+    tipo_esq = Varexp() "=" tipo_dir = Expression()
+    {
+        erroTipo(tipo_esq, tipo_dir, nome_variavel);
+        nome_variavel = "";
+    }
+}
+
+void Assignmulti() : {} { Varexp() ("," Varexp())* "=" Expression() ("," Expression())* }
+
+void Assignwithop() : 
+{
+    String tipo_esq, tipo_dir;
+    Token op;
+} 
+{ 
+    tipo_esq = Varexp() ( op = "+" | op = "-" | op = "/" | op = "*" | op = "&" ) "=" tipo_dir = Expression()
+    { 
+        tipo_dir = comparaTipos(tipo_esq, op.toString(), tipo_dir);
+        erroTipo(tipo_esq, tipo_dir, nome_variavel);
+        nome_variavel = "";
+    }
+}
+
+void Return() :
+{
+    String tipo;
+    if(flagBranchStmt == 0)
+        nReturn++;
+
+    procedureReturn++;
+}
+{
+    <RETURN> tipo = Expression()
+    {
+        if(!nomeFunc.equals("")) {
+            Dado func = buscaIdentificador(TabelaSimb, nomeFunc, 0);
+            Integer chave = buscaTipo(TabelaSimb, tipo);
+            if(chave > -1) {
+                func.setTipo(chave);
+            }
+        }
+    }
+}
+void Vardeclare() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER>
+    {
+        tipo = t;
+    }
+    Identlist()
+    {
+        tipo = null;
+        atualizaVariavel(t, "var");
+    }
+}
+
+void Identlist() : {}{ Ident() ("," Ident())* }
+
+void Ident() :
+{
+    Token t;
+    String tipo1 = "";
+}
+{
+    t = <IDENTIFIER>
+    {
+        nome_variavel = t.toString();
+        sequencia = new Dado();
+    }
+    ("=" tipo1 = Expression()
+    {
+        erroTipo(tipo.toString(), tipo1, t.toString());
+    })?
+    {
+        Dado tmp = new Dado();
+        tmp.setIdentificador(t.toString());
+
+        // Verifica se é uma constante
+        if(valor != null && flagCategoria.equals("constant")) {
+            tmp.setValor(valor.toString());
+            valor = null;
+        }
+
+        if(sequencia.getArgs().size() > 0) {
+            tmp.setArgs(sequencia.getArgs());
+        }
+
+        // Se não está dentro de um branch (if, for, etc)
+        if(flagBranchStmt == 0) {
+            tmp.setNivel(nivelCorrente);
+            insereTabela(TabelaSimb, tmp);
+        }
+        // Se estiver, verifica na tabela auxiliar
+        else {
+            if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
+                tmp.setNivel(flagBranchStmt);
+                insereTabela(TabelaAux, tmp);
+            }
+            else {
+                System.out.println("Erro! Identificador \"" + tmp.getIdentificador() +  "\" já declarado");
+                erro_s++;
+            }
+        }
+        nome_variavel = "";
+    }
+}
+
+void Constdeclare() :
+{
+    Token t;
+    flagCategoria = "constant";
+}
+{
+    t = <CONSTANT> Identlist()
+    {
+        if(flagBranchStmt == 0)
+            atualizaCategoria(TabelaSimb, t.toString());
+        else
+            atualizaCategoria(TabelaAux, t.toString());
+        listaChaves.clear();
+        flagCategoria = "";
+    }
+}
+
+void Enumdeclare() : {}
+{
+    <ENUM> (Enumval() | Enumtype())
+}
+void Enumval() : {}
+{
+    (<BY> Enumdelta())? Identlist()
+    {
+        Integer chave = buscaTipo(TabelaSimb, "integer");
+        if(flagBranchStmt == 0) {
+            atualizaCategoria(TabelaSimb, "constant");
+            atualizaTipo(TabelaSimb, chave);
+        }
+        else {
+            atualizaCategoria(TabelaAux, "constant");
+            atualizaTipo(TabelaAux, chave);
+        }
+        listaChaves.clear();
+        flagCategoria = "";
+    }
+}
+void Enumdelta() : {} { ("*" | "/")? Expression() }
+void Enumtype() :
+{
+    Integer chave;
+    Dado dado;
+    Token t;
+}
+{
+    <TYPE> (<BY> Enumdelta())?
+    t = <IDENTIFIER>
+    {
+        // Neste caso precisa ser do tipo inteiro
+        chave = buscaTipo(TabelaSimb, "integer");
+
+        if(chave > -1) {
+            dado = new Dado();
+            dado.setIdentificador(t.toString());
+            dado.setNivel(nivelCorrente);
+            dado.setCategoria("type");
+            dado.setTipo(chave);
+
+            if(flagBranchStmt == 0)
+                insereTabela(TabelaSimb, dado);
+            else
+                insereTabela(TabelaAux, dado);
+        }
+        else {
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+            erro_s++;
+        }
+        listaChaves.clear();
+    }
+    Identlist()
+    {
+        atualizaVariavel(t, "constant");
+    }
+    <END> <TYPE>
+}
+void Procdeclare() :
+{
+    Dado dado;
+    Token t, s;
+}
+{
+    t = <PROCEDURE> s = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(s.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(t.toString());
+
+        insereTabela(TabelaSimb, dado);
+        listaChaves.clear();
+        nivelCorrente++;
+    }
+    "(" (Paramlist())? ")"
+    {
+        dado.setNParametros(listaChaves.size());
+        // Adiciona os parametros em uma lista para recuperar depois na checagem de tipos
+        if(listaChaves.size() > 0) {
+            for(Integer key : listaChaves) {
+                dado.setArgs(TabelaSimb.get(key));
+            }
+        }
+    }
+    (Block())?
+    <END> <PROCEDURE>
+    {
+        if(procedureReturn > 0){
+            System.out.println("Erro! Procedure não pode ter return!!");
+            erro_s++;
+        }
+
+        procedureReturn = 0;
+        removeNivel(TabelaSimb, nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
+    }
+}
+void Paramlist() : {}{ (Parameter() ("," Parameter())* ) }
+void Parameter() :
+{
+    Dado dado;
+    Token t, n;
+}
+{
+    t = <IDENTIFIER> n = <IDENTIFIER>
+    {
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave > -1) {
+            dado = new Dado();
+            dado.setIdentificador(n.toString());
+            dado.setNivel(nivelCorrente);
+            dado.setTipo(chave);
+            dado.setCategoria("parameter");
+
+            insereTabela(TabelaSimb, dado);
+        }
+        else {
+            System.out.println("Erro! Palavra reservada \"" + t.toString() + "\" não existe");
+            erro_s++;
+        }
+    }
+}
+void Funcdeclare() :
+{
+    Dado dado;
+    Token t, s;
+}
+{
+    t = <FUNCTION>
+    s = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(s.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(t.toString());
+
+        insereTabela(TabelaSimb, dado);
+        nomeFunc = s.toString();
+        listaChaves.clear();
+        nivelCorrente++;
+    }
+    "("(Paramlist())?")"
+    {
+        dado.setNParametros(listaChaves.size());
+        // Adiciona os parametros em uma lista para recuperar depois na checagem de tipos
+        if(listaChaves.size() > 0) {
+            for(Integer key : listaChaves) {
+                dado.setArgs(TabelaSimb.get(key));
+            }
+        }
+    }
+    (Block())?
+    <END> <FUNCTION>
+    {
+        if(nReturn < 1){
+            System.out.println("Erro! Function precisa de retorno!");
+            erro_s++;
+        }
+        nReturn = 0;
+        removeNivel(TabelaSimb, nivelCorrente);
+        nomeFunc = "";
+        listaChaves.clear();
+        nivelCorrente--;
+    }
+}
+void Typedeclare() :
+{
+    Token t, s;
+}
+{
+    s = <TYPE>
+    t = <IDENTIFIER>
+    {
+        dado = new Dado();
+        dado.setIdentificador(t.toString());
+        dado.setNivel(nivelCorrente);
+        dado.setCategoria(s.toString());
+
+        insereTabela(TabelaSimb, dado);
+        listaChaves.clear();
+        nivelCorrente++;
+
+    }
+    "(" Parameter() ")" (Block())?
+    <END> <TYPE>
+    {
+        if(nReturn < 1){
+            System.out.println("Erro! Type precisa de retorno!");
+            erro_s++;
+        }
+        nReturn = 0;
+
+        removeNivel(TabelaSimb, nivelCorrente);
+        listaChaves.clear();
+        nivelCorrente--;
+    }
+}
+String Expression() :
+{
+    String t;
+}
+{
+    t = Binexpr()
+    {
+        return t;
+    }
+}
+String Binexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Relexpr()
+    (operacao = Binop() tipo2 = Relexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Binop() :
+{
+    Token t;
+}
+{
+    t = <AND>
+    {
+        return t.toString();
+    }
+    |
+    t = <OR>
+    {
+        return t.toString();
+    }
+    |
+    t = <XOR>
+    {
+        return t.toString();
+    }
+}
+String Relexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Concatexpr()
+    (operacao = Relop() tipo2 = Concatexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Relop() :
+{
+    Token t;
+}
+{
+    t = "<"
+    {
+        return t.toString();
+    }
+    |
+    t = ">"
+    {
+        return t.toString();
+    }
+    |
+    t = "<="
+    {
+        return t.toString();
+    }
+    |
+    t = ">="
+    {
+        return t.toString();
+    }
+    |
+    t = "="
+    {
+        return t.toString();
+    }
+    |
+    t = "!="
+    {
+        return t.toString();
+    }
+}
+String Concatexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Sumsubexpr()
+    (operacao = Concat() tipo2 = Sumsubexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Concat() :
+{
+    Token t;
+}
+{
+    t = "&"
+    {
+        return t.toString();
+    }
+}
+String Sumsubexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Multidivexpr()
+    (operacao = Sumsub() tipo2 = Multidivexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Sumsub() :
+{
+    Token t;
+}
+{
+    t = "+"
+    {
+        return t.toString();
+    }
+    |
+    t = "-"
+    {
+        return t.toString();
+    }
+}
+String Multidivexpr() :
+{
+    String tipo1 = "", tipo2 = "", operacao = "";
+}
+{
+    tipo1 = Unaryexpr()
+    (operacao = Multidiv() tipo2 = Unaryexpr()
+    {
+        tipo1 = comparaTipos(tipo1, operacao, tipo2);
+    })*
+    {
+        return tipo1;
+    }
+
+}
+String Multidiv() :
+{
+    Token t;
+}
+{
+    t = "*"
+    {
+        return t.toString();
+    }
+    |
+    t = "/"
+    {
+        return t.toString();
+    }
+}
+String Unaryexpr():
+{
+    String tipo1 = "", operacao = "";
+}
+{
+    (operacao = Unaryop())?
+    tipo1 = Lastexpr()
+    {
+        return tipo1;
+    }
+}
+String Unaryop() :
+{
+    Token t;
+}
+{
+    t = <NOT>
+    {
+        return t.toString();
+    }
+    |
+    t = "-"
+    {
+        return t.toString();
+    }
+    |
+    t = "+"
+    {
+        return t.toString();
+    }
+}
+String Lastexpr() :
+{
+    Token t;
+    String s;
+}
+{
+    s = Atomexpr()
+    {
+        return s;
+    }
+    |
+    s = Stringlit()
+    {
+        return s;
+    }
+    |
+    <BIN>
+    {
+        return "";
+    }
+    |
+    Seqexpr()
+    {
+        return "sequence";
+    }
+    |
+    "("s = Expression()")"
+    {
+        return s;
+    }
+    |
+    t = <IDENTIFIER>
+    (Variable()
+    {
+        return "";
+    }
+    |
+    Callf(t)
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
+            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+            erro_s++;
+        }
+
+        String Categoria = buscaCategoria(TabelaSimb, t.toString(), 0);
+
+        if(Categoria != null && !Categoria.equals("function")) {
+            System.out.println("Erro! O procedure \"" + t.toString() + "\" não retorna nenhum valor.\n");
+            erro_s++;
+        }
+        Dado func = buscaIdentificador(TabelaSimb, t.toString(), 0);
+        return TabelaSimb.get(func.getTipo()).getIdentificador();
+    })?
+    {
+        naoDeclaradoFluxo(t);
+        s = checaTipoFluxo(t);
+        return s;
+    }
+}
+void Variable() : {} { ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ ) }
+String Varexp() :
+{
+    Token t;
+    String s;
+}
+{
+    t = <IDENTIFIER> 
+    {
+        nome_variavel = t.toString();
+        s = checaTipoFluxo(t);
+        return s;
+    }
+    ( LOOKAHEAD(3) Slice() | ("["Expression()"]")+ )?
+    {
+        naoDeclaradoFluxo(t);
+    }
+}
+void Slice() : {} { "[" Expression() ".." (Expression() | <DOLAR>) "]"}
+void Seqexpr() :
+{
+    String tipo;
+    // FIXME verificar na tabela aux
+    Dado teste = buscaIdentificador(TabelaSimb, nome_variavel, nivelCorrente);
+    if(teste != null)
+        sequencia = teste;
+    Dado conteudo = new Dado();
+}
+{
+    "{" (tipo = Expression()
+    {
+        //FIXME tratar caso literal
+        conteudo.setTipo(buscaTipo(TabelaSimb, tipo));
+        sequencia.setArgs(conteudo);
+    }
+    (
+    ("," tipo = Expression()
+    {
+        conteudo.setTipo(buscaTipo(TabelaSimb, tipo));
+        sequencia.setArgs(conteudo);
+    })+
+    | <DOLAR>)?)? "}"
+}
+void Call() :
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER>
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), 0)) {
+            System.out.println("Erro! A função \"" + t.toString() + "\" não foi declarada!\n");
+            erro_s++;
+        }
+    }
+    "(" (Arglist(t))? ")"
+    {
+        Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
+
+        if(nParam != countArgs){
+            System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+            erro_s++;
+        }
+        countArgs = 0;
+    }
+}
+void Callf(Token t) :
+{
+}
+{
+    "(" (Arglist(t))? ")"
+    {
+        Integer nParam = getNParametros(TabelaSimb, t.toString(), 0);
+
+        if(nParam != countArgs){
+            System.out.println("Erro! " + t.toString() + " esperava " + nParam + " argumentos mas recebeu " + countArgs + " .");
+            erro_s++;
+        }
+        countArgs = 0;
+    }
+}
+void Arglist(Token t) :
+{
+   Dado d = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+   ArrayList <Dado> lista = d.getArgs();
+   String s, v;
+}
+{
+    s = Expression() 
+    {
+    if(!lista.isEmpty())
+    {
+        Integer chave = lista.get(countArgs).getTipo();
+        v = TabelaSimb.get(chave).getIdentificador();
+
+        erroTipo(v, s, t.toString());
+    }
+    countArgs++;
+    }
+    ("," s = Expression()
+    {
+    Integer chave = lista.get(countArgs).getTipo();
+    v = TabelaSimb.get(chave).getIdentificador();
+
+    erroTipo(v, s, t.toString());
+    countArgs++;
+    })*
+}
+String Atomexpr() : {}
+{
+    <ATOMINTEGER>
+    {
+        return "integer";
+    }
+    |
+    <ATOMREAL>
+    {
+        return "atom";
+    }
+    |
+    <ATOMBINARY>
+    {
+        return "atom";
+    }
+    |
+    <ATOMOCTAL>
+    {
+        return "atom";
+    }
+    |
+    <ATOMDECIMAL>
+    {
+        return "atom";
+    }
+    |
+    <ATOMHEXADECIMAL>
+    {
+        return "atom";
+    }
+}
+
+/* Funcoes Auxiliares */
+boolean naoDeclarado(Hashtable<Integer, Dado> tabela, String Identificador, Integer NivelProcurado) :
+{
+    Enumeration t = tabela.keys();
+    Integer chave;
+    Dado dado;
+}
+{
+    {
+        while (t.hasMoreElements()) {
+            chave = (Integer)t.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == NivelProcurado){
+                return false;/* ja existe na tabela*/
+            }
+        }
+        /* pode ser adicionado futuramente na tabela */
+        return true;
+    }
+}
+
+void naoDeclaradoFluxo(Token t) : {}
+{
+    {
+        if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)) {
+            int i = 0;
+            for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+
+            if(i == 0){
+                System.out.println("Erro! Variável \"" + t.toString() + "\" não declarada no nivel atual!");
+                erro_s++;
+            }
+        }
+    }
+}
+
+void insereTabela(Hashtable<Integer, Dado> tabela, Dado dado) : {}
+{
+    {
+        if(naoDeclarado(tabela, dado.getIdentificador(), dado.getNivel())){
+            tabela.put(indexTabela, dado);
+            listaChaves.add(indexTabela);
+            indexTabela++;
+        }
+        else {
+            System.out.println("Erro! Identificador \"" + dado.getIdentificador() +  "\" já declarado no nível atual");
+            erro_s++;
+        }
+    }
+}
+
+Integer buscaTipo(Hashtable<Integer, Dado> tabela, String Identificador) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getCategoria().equals("type"))
+                return chave;
+        }
+        return -1;
+    }
+}
+
+Dado buscaIdentificador(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == Nivel)
+                return dado;
+        }
+        return null;
+    }
+}
+
+String buscaCategoria(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && dado.getNivel() == Nivel)
+                return dado.getCategoria();
+        }
+        return null;
+    }
+}
+
+Integer getNParametros(Hashtable<Integer, Dado> tabela, String Identificador, Integer Nivel) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getIdentificador().equals(Identificador) && Nivel == dado.getNivel())
+                return dado.getNParametros();
+        }
+
+        return -1;
+    }
+}
+
+void imprimeTabela(Hashtable<Integer, Dado> tabela) :
+{
+    Integer chave;
+    Enumeration elemento = tabela.keys();
+    Dado dado;
+}
+{
+    {
+
+        System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n", "ID", "IDENT", "NIVEL", "CATEGORIA", "TIPO", "END", "NBYTE", "VALOR", "CLASST", "NPARAM");
+        System.out.println("----------------------------------------------------------------------------");
+        while(elemento.hasMoreElements()) {
+            chave = (Integer) elemento.nextElement();
+            dado = tabela.get(chave);
+
+            System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n",
+                              chave, dado.getIdentificador(), dado.getNivel(),
+                              dado.getCategoria(), dado.getTipo(), dado.getEndereco(),
+                              dado.getNBytes(), dado.getValor(), dado.getClasseTransf(),
+                              dado.getNParametros());
+            if(dado.getArgs().size() > 0) {
+                System.out.println("---------------------------ARG LIST---------------------------------------------");
+            }
+            for(Dado param : dado.getArgs())
+                System.out.printf("%-4s%-10s%-6s%-10s%-6s%-6s%-6s%-6s%-10s%-10s\n",
+                                  chave, param.getIdentificador(), param.getNivel(),
+                                  param.getCategoria(), param.getTipo(), param.getEndereco(),
+                                  param.getNBytes(), param.getValor(), param.getClasseTransf(),
+                                  param.getNParametros());
+
+            if(dado.getArgs().size() > 0) {
+                System.out.println("-----------------------FIM ARG LIST---------------------------------------------");
+            }
+        }
+
+        System.out.println("");
+    }
+}
+
+void atualizaCategoria(Hashtable<Integer, Dado> tabela,String Categoria) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = tabela.get(chave);
+            dado.setCategoria(Categoria);
+        }
+
+    }
+}
+
+void atualizaTipo(Hashtable<Integer, Dado> tabela, Integer Tipo) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = tabela.get(chave);
+            dado.setTipo(Tipo);
+        }
+    }
+}
+
+void atualizaNParam(Hashtable<Integer, Dado> tabela, Integer n) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = tabela.get(chave);
+            dado.setNParametros(n);
+        }
+    }
+}
+void atualizaNBytes(Hashtable<Integer, Dado> tabela, Integer nbytes) :
+{
+    Dado dado;
+}
+{
+    {
+        for(Integer chave : listaChaves)
+        {
+            dado = tabela.get(chave);
+            dado.setNBytes(nbytes);
+        }
+    }
+}
+
+void removeNivel(Hashtable<Integer, Dado> tabela, Integer nivel) :
+{
+    Integer chave;
+    Enumeration t = tabela.keys();
+    Dado dado;
+}
+{
+    {
+        while(t.hasMoreElements())
+        {
+            chave = (Integer) t.nextElement();
+            dado = tabela.get(chave);
+
+            if(dado.getNivel() == nivel) {
+                tabela.remove(chave);
+            }
+        }
+    }
+}
+
+void removeChaves(Hashtable<Integer, Dado> tabela, ArrayList<Integer> chaves) : {}
+{
+    {
+        for(Integer chave : chaves) {
+            tabela.remove(chave);
+        }
+    }
+}
+
+void atualizaVariavel(Token t, String Categoria) : {}
+{
+    {
+        Hashtable <Integer, Dado> tabela = TabelaSimb;
+        Integer chave = buscaTipo(TabelaSimb, t.toString());
+
+        if(chave == -1) {
+            tabela = TabelaAux;
+            chave = buscaTipo(tabela, t.toString());
+        }
+
+        if(chave > -1) {
+            Dado builtin = tabela.get(chave);
+            if(flagBranchStmt == 0) {
+                atualizaTipo(TabelaSimb, chave);
+                atualizaNBytes(TabelaSimb, builtin.getNBytes());
+                atualizaCategoria(TabelaSimb, Categoria);
+            }
+            else {
+                atualizaTipo(TabelaAux, chave);
+                atualizaNBytes(TabelaAux, builtin.getNBytes());
+                atualizaCategoria(TabelaAux, Categoria);
+            }
+        }
+        else {
+            System.out.println("Erro! O tipo \"" + t.toString() + "\" não existe!\n");
+            erro_s++;
+
+            if(flagBranchStmt == 0)
+                removeChaves(TabelaSimb, listaChaves);
+            else
+                removeChaves(TabelaAux, listaChaves);
+        }
+        listaChaves.clear();
+    }
+}
+
+String comparaTipos(String tipo1, String operacao, String tipo2) : {}
+{
+    {
+        if(operacao.equals("+") || operacao.equals("-") || operacao.equals("*")){
+            if(tipo1.equals("integer") && tipo2.equals("integer"))
+                return "integer";
+
+            if(tipo1.equals("atom") && tipo2.equals("atom"))
+                return "atom";
+
+            if(tipo1.equals("object") && tipo2.equals("object"))
+                return "object";
+
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                return "sequence";
+
+            if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
+                return "atom";
+
+            if((tipo1.equals("object") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "sequence";
+
+        }
+        if(operacao.equals("/")){
+            if(tipo1.equals("integer") && tipo2.equals("integer"))
+                return "atom";
+
+            if(tipo1.equals("atom") && tipo2.equals("atom"))
+                return "atom";
+
+            if(tipo1.equals("object") && tipo2.equals("object"))
+                return "object";
+
+            if(tipo1.equals("sequence") && tipo2.equals("sequence"))
+                return "sequence";
+
+            if((tipo1.equals("atom") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("atom")))
+                return "atom";
+
+            if((tipo1.equals("object") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("object") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("object")))
+                return "object";
+
+            if((tipo1.equals("sequence") && tipo2.equals("integer")) || (tipo1.equals("integer") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("atom")) || (tipo1.equals("atom") && tipo2.equals("sequence")))
+                return "sequence";
+
+            if((tipo1.equals("sequence") && tipo2.equals("object")) || (tipo1.equals("object") && tipo2.equals("sequence")))
+                return "sequence";
+        }
+        if(operacao.equals("and") || operacao.equals("or") || operacao.equals("xor") || operacao.equals(">")
+           || operacao.equals("<") || operacao.equals(">=") || operacao.equals("<=") || operacao.equals("=")
+           || operacao.equals("!=") || operacao.equals("not")){
+            return "atom";
+        }
+        /*if(operacao.equals()){
+        }
+        if(operacao.equals()){
+        }*/
+        return "";
+    }
+}
+
+void erroTipo(String tipo_esq, String tipo_dir, String variavel) : {}
+{
+    {
+        if(!tipo_esq.equals(tipo_dir)) {
+            if(tipo_esq.equals("integer") && (tipo_dir.equals("atom") || tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                erro_s++;
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+            else if(tipo_esq.equals("atom") && (tipo_dir.equals("object") || tipo_dir.equals("sequence"))) {
+                erro_s++;
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+            else if(tipo_esq.equals("sequence") && (tipo_dir.equals("object") || tipo_dir.equals("atom") || tipo_dir.equals("integer"))) {
+                erro_s++;
+                System.out.println("ERRO! A variável \"" + variavel + "\" esperava o tipo \"" + tipo_esq + "\" mas recebeu \"" + tipo_dir + "\".");
+            }
+        }
+    }
+}
+
+void initBuiltins(): {}
+{
+    {
+        //Atom
+        Dado atom = new Dado();
+        atom.setIdentificador("atom");
+        atom.setCategoria("type");
+        atom.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        atom.setNBytes(5);
+        atom.setNivel(0);
+
+        insereTabela(TabelaSimb, atom);
+
+        //Integer
+        Dado integer = new Dado();
+        integer.setIdentificador("integer");
+        integer.setCategoria("type");
+        integer.setTipo(indexTabela);
+        // FIXME: Definir o tamanho em bytes
+        integer.setNBytes(4);
+        integer.setNivel(0);
+
+        insereTabela(TabelaSimb, integer);
+
+        Dado sequence = new Dado();
+        sequence.setIdentificador("sequence");
+        sequence.setCategoria("type");
+        sequence.setTipo(indexTabela);
+        sequence.setNivel(0);
+
+        insereTabela(TabelaSimb, sequence);
+
+        Dado object = new Dado();
+        object.setIdentificador("object");
+        object.setCategoria("type");
+        object.setTipo(indexTabela);
+        object.setNivel(0);
+
+        insereTabela(TabelaSimb, object);
+        //?
+        Dado question = new Dado();
+        question.setIdentificador("?");
+        question.setCategoria("procedure");
+        question.setTipo(indexTabela);
+        question.setNivel(0);
+
+        insereTabela(TabelaSimb, question);
+
+        //print
+        Dado print = new Dado();
+        print.setIdentificador("print");
+        print.setCategoria("procedure");
+        print.setNParametros(3);
+        print.setTipo(indexTabela);
+        print.setNivel(0);
+
+        insereTabela(TabelaSimb, print);
+
+        //puts
+        Dado puts = new Dado();
+        puts.setIdentificador("puts");
+        puts.setCategoria("procedure");
+        puts.setNParametros(2);
+        puts.setTipo(indexTabela);
+        puts.setNivel(0);
+
+        insereTabela(TabelaSimb, puts);
+
+        Dado printf = new Dado();
+        printf.setIdentificador("printf");
+        printf.setCategoria("procedure");
+        printf.setNParametros(3);
+        printf.setTipo(indexTabela);
+        printf.setNivel(0);
+
+        insereTabela(TabelaSimb, printf);
+        Dado length = new Dado();
+        length.setIdentificador("length");
+        length.setCategoria("function");
+        length.setNParametros(1);
+        length.setTipo(indexTabela);
+        length.setNivel(0);
+
+        insereTabela(TabelaSimb, length);
+
+        Dado getc = new Dado();
+        getc.setIdentificador("getc");
+        getc.setCategoria("function");
+        getc.setNParametros(1);
+        getc.setTipo(indexTabela);
+        getc.setNivel(0);
+
+        insereTabela(TabelaSimb, getc);
+
+        Dado find = new Dado();
+        find.setIdentificador("find");
+        find.setCategoria("function");
+        find.setNParametros(3);
+        find.setTipo(indexTabela);
+        find.setNivel(0);
+
+        insereTabela(TabelaSimb, find);
+
+        Dado sprintf = new Dado();
+        sprintf.setIdentificador("sprintf");
+        sprintf.setCategoria("function");
+        sprintf.setNParametros(2);
+        sprintf.setTipo(indexTabela);
+        sprintf.setNivel(0);
+
+        insereTabela(TabelaSimb, sprintf);
+
+        Dado rand = new Dado();
+        rand.setIdentificador("rand");
+        rand.setCategoria("function");
+        rand.setNParametros(1);
+        rand.setTipo(indexTabela);
+        rand.setNivel(0);
+
+        insereTabela(TabelaSimb, rand);
+
+        Dado sqrt = new Dado();
+        sqrt.setIdentificador("sqrt");
+        sqrt.setCategoria("function");
+        sqrt.setNParametros(1);
+        sqrt.setTipo(indexTabela);
+        sqrt.setNivel(0);
+
+        insereTabela(TabelaSimb, sqrt);
+
+        Dado tan = new Dado();
+        tan.setIdentificador("tan");
+        tan.setCategoria("function");
+        tan.setNParametros(1);
+        tan.setTipo(indexTabela);
+        tan.setNivel(0);
+
+        insereTabela(TabelaSimb, tan);
+
+        Dado sin = new Dado();
+        sin.setIdentificador("sin");
+        sin.setCategoria("function");
+        sin.setNParametros(1);
+        sin.setTipo(indexTabela);
+        sin.setNivel(0);
+
+        insereTabela(TabelaSimb, sin);
+
+        Dado cos = new Dado();
+        cos.setIdentificador("cos");
+        cos.setCategoria("function");
+        cos.setNParametros(1);
+        cos.setTipo(indexTabela);
+        cos.setNivel(0);
+
+        insereTabela(TabelaSimb, cos);
+
+        Dado log = new Dado();
+        log.setIdentificador("log");
+        log.setCategoria("function");
+        log.setNParametros(1);
+        log.setTipo(indexTabela);
+        log.setNivel(0);
+
+        insereTabela(TabelaSimb, log);
+
+        Dado power = new Dado();
+        power.setIdentificador("power");
+        power.setCategoria("function");
+        power.setNParametros(2);
+        power.setTipo(indexTabela);
+        power.setNivel(0);
+
+        insereTabela(TabelaSimb, power);
+
+        listaChaves.clear();
+    }
+}
+
+String checaTipoFluxo(Token t) :
+{
+    Dado temp;
+    Dado dado_tipo;
+    Integer chave;
+}
+{
+    {
+        // Se não está dentro de um branch (if, for, etc)
+        if(flagBranchStmt == 0) {
+
+            temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+            if(temp != null){
+                chave = temp.getTipo();
+                dado_tipo = TabelaSimb.get(chave);
+                return dado_tipo.getIdentificador();
+            }
+            else{
+                return "";
+            }
+        }
+        else{
+            if(naoDeclarado(TabelaSimb, t.toString(), nivelCorrente)){
+                int i = 0;
+                for(i = flagBranchStmt; naoDeclarado(TabelaAux, t.toString(), i) && i > 0; i--);
+                if(i != 0){
+                    temp = buscaIdentificador(TabelaAux, t.toString(), i);
+                    chave = temp.getTipo();
+                    dado_tipo = TabelaSimb.get(chave);
+                    return dado_tipo.getIdentificador();
+                }
+                else{
+                    return "";
+                }
+            }
+            else{
+                temp = buscaIdentificador(TabelaSimb, t.toString(), nivelCorrente);
+                chave = temp.getTipo();
+                dado_tipo = TabelaSimb.get(chave);
+                return dado_tipo.getIdentificador();
+            }
+        }
+    }
+}

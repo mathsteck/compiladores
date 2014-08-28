@@ -1,0 +1,20 @@
+procedure bar1(atom n)
+    n = 2
+end procedure
+
+
+procedure bar2(atom n, integer m, object o, sequence s)
+    atom a, b
+    a = 2
+    b = a
+    n = m
+    o = s
+end procedure
+
+atom n
+integer m
+object o
+sequence s
+
+bar2(n, m, o, s)
+bar1(n)

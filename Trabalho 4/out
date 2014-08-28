@@ -1,0 +1,77 @@
+Java Compiler Compiler Version 5.0 (Parser Generator)
+(type "javacc" with no arguments for help)
+Reading from file TrabalhoSemantico.jj . . .
+File "TokenMgrError.java" is being rebuilt.
+File "ParseException.java" is being rebuilt.
+File "Token.java" is being rebuilt.
+File "SimpleCharStream.java" is being rebuilt.
+Parser generated successfully.
+Testing atom_correct_test.epy ...
+SUCESSO
+
+Testing builtins_test.epy ...
+SUCESSO
+
+Testing constant_test.epy ...
+SUCESSO
+
+Testing enum_test.epy ...
+SUCESSO
+
+Testing for_correct_test.epy ...
+SUCESSO
+
+Testing foreach_test.epy ...
+SUCESSO
+
+Testing for_test.epy ...
+SUCESSO
+
+Testing for_while_if_correct_test.epy ...
+SUCESSO
+
+Testing function_correct_test.epy ...
+SUCESSO
+
+Testing function_test.epy ...
+SUCESSO
+
+Testing if_correct_test.epy ...
+SUCESSO
+
+Testing integer_correct_test.epy ...
+SUCESSO
+
+Testing loop_correct_test.epy ...
+SUCESSO
+
+Testing object_correct_test.epy ...
+SUCESSO
+
+Testing procedure_correct_test.epy ...
+SUCESSO
+
+Testing procedure_test.epy ...
+SUCESSO
+
+Testing seq_test.epy ...
+SUCESSO
+
+Testing sequence_correct_test.epy ...
+SUCESSO
+
+Testing switch_correct_test.epy ...
+SUCESSO
+
+Testing type_correct_test.epy ...
+SUCESSO
+
+Testing type_test.epy ...
+SUCESSO
+
+Testing var_test.epy ...
+SUCESSO
+
+Testing while_correct_test.epy ...
+SUCESSO
+

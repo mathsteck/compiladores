@@ -1,0 +1,11 @@
+integer a
+integer b,c
+integer d=3
+integer e=2,f=1
+integer g=4,h
+integer i,j=10
+
+a=1
+b=3
+c=d*e
+g+=i

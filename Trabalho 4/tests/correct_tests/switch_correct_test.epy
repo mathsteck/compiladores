@@ -1,0 +1,13 @@
+integer x, a, b, c, d
+
+switch x do
+	case a, b then
+		?1
+		integer z
+	case c then
+		z = 0
+	else
+		integer y
+		y = z
+		d = y
+end switch
